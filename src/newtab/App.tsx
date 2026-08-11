@@ -8,7 +8,6 @@ import Clock from './components/Clock/Clock';
 import AIDock from './components/AIDock/AIDock';
 import SearchBar from './components/SearchBar/SearchBar';
 import Dock from './components/Dock/Dock';
-import FocusStrip from './components/FocusCard/FocusStrip';
 import ProductivityCard from './components/ProductivityCard/ProductivityCard';
 import TabIntelCard from './components/TabIntelCard/TabIntelCard';
 import SettingsPanel from './components/Settings/SettingsPanel';
@@ -28,11 +27,6 @@ export default function App() {
       {/* ── Large clock — left center ───────────── */}
       <div className={styles.clockArea}>
         <Clock settings={settings} />
-      </div>
-
-      {/* ── Focus strip — below clock, shifted down more for analog ── */}
-      <div className={styles.focusArea} style={settings.clockStyle === 'analog' ? { marginTop: '2cm' } : undefined}>
-        <FocusStrip />
       </div>
 
       {/* ── Search bar — top right ──────────────── */}
