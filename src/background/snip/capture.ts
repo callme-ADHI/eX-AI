@@ -21,18 +21,30 @@ export async function captureVisibleTab(
 ): Promise<CaptureResponse> {
   const now = Date.now();
   if (now - lastCaptureTime < CAPTURE_DEBOUNCE_MS) {
-    return { ok: false, reason: 'Capture requested too quickly' };
+    return { ok: false, reason: 'Capture requested too quickly. Please wait a moment.' };
   }
   lastCaptureTime = now;
 
   try {
-    const targetWindowId = windowId ?? chrome.windows.WINDOW_ID_CURRENT;
-    const dataUrl = await chrome.tabs.captureVisibleTab(targetWindowId, {
-      format: 'png',
-    });
+    let dataUrl: string | undefined;
+
+    if (typeof windowId === 'number' && windowId > 0) {
+      try {
+        dataUrl = await chrome.tabs.captureVisibleTab(windowId, { format: 'png' });
+      } catch (winErr) {
+        // Fall back to current window if specific window ID failed
+        dataUrl = await chrome.tabs.captureVisibleTab(chrome.windows.WINDOW_ID_CURRENT, {
+          format: 'png',
+        });
+      }
+    } else {
+      dataUrl = await chrome.tabs.captureVisibleTab(chrome.windows.WINDOW_ID_CURRENT, {
+        format: 'png',
+      });
+    }
 
     if (!dataUrl) {
-      return { ok: false, reason: "Can't capture this page" };
+      return { ok: false, reason: "Can't capture this page (empty capture returned)" };
     }
 
     return { ok: true, dataUrl };
@@ -40,7 +52,7 @@ export async function captureVisibleTab(
     console.error('[eX-AI] captureVisibleTab failed:', err);
     return {
       ok: false,
-      reason: err.message || "Can't capture this page (restricted origin or internal page)",
+      reason: err?.message || "Can't capture this page (restricted origin or internal page)",
     };
   }
 }

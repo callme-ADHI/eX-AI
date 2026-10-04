@@ -178,12 +178,15 @@ export default function SidePanel({
 
     // 3. Capture visible tab
     chrome.runtime.sendMessage({ type: 'SNIP_CAPTURE' }, (res) => {
-      if (!res || !res.ok || !res.dataUrl) {
+      // SW router wraps result in { ok: true, data: { ok: true, dataUrl: '...' } }
+      const payload = res && res.data !== undefined ? res.data : res;
+      if (!res?.ok || !payload || !payload.ok || !payload.dataUrl) {
         setIsPanelHiddenForSnip(false);
-        alert(res?.reason || "Can't capture this page.");
+        const reason = payload?.reason || res?.error || payload?.error || "Can't capture this page.";
+        alert(reason);
         return;
       }
-      setScreenshotUrl(res.dataUrl);
+      setScreenshotUrl(payload.dataUrl);
     });
   }, []);
 
@@ -212,7 +215,9 @@ export default function SidePanel({
         psmHint: snip.psmHint,
       },
       (res) => {
-        if (!res || !res.ok || !res.data) {
+        const payload = res && res.data !== undefined ? res.data : res;
+        const inner = payload && payload.data !== undefined ? payload.data : payload;
+        if (!res?.ok || !payload || !payload.ok || !inner) {
           setOcrAttachment({
             thumbnail: snip.thumbnail,
             mode: snip.mode as any,
@@ -222,8 +227,7 @@ export default function SidePanel({
           return;
         }
 
-        const ocrData = res.data;
-        const text = (ocrData.text || '').trim();
+        const text = (inner.text || '').trim();
 
         if (!text) {
           setOcrAttachment({
@@ -268,19 +272,20 @@ export default function SidePanel({
         mode: newMode,
       },
       (res) => {
-        if (!res || !res.ok || !res.data) {
+        const payload = res && res.data !== undefined ? res.data : res;
+        const inner = payload && payload.data !== undefined ? payload.data : payload;
+        if (!res?.ok || !payload || !payload.ok || !inner) {
           setOcrAttachment((prev) => (prev ? { ...prev, loading: false } : null));
           return;
         }
 
-        const ocrData = res.data;
-        const text = (ocrData.text || '').trim();
+        const text = (inner.text || '').trim();
 
         setOcrAttachment((prev) =>
           prev
             ? {
                 ...prev,
-                confidence: ocrData.confidence,
+                confidence: inner.confidence,
                 mode: newMode as any,
                 loading: false,
                 empty: !text,
