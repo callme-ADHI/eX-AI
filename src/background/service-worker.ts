@@ -41,9 +41,21 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
 
 initFocusEngine();
 initTabEngine();
-initSecurityEngine();
+
+// Security engine is gated by user setting (default OFF for privacy).
+// It sends visited domains to third-party geo-IP and RDAP services.
+// Users must explicitly enable it in eX-AI settings.
+(async () => {
+  const stored = await storageGet<Record<string, unknown>>('exai:settings');
+  const securityEngineEnabled = stored?.securityEngineEnabled ?? false;
+  if (securityEngineEnabled) {
+    initSecurityEngine();
+  }
+})();
+
 initProductivityEngine();
 initializeTabIntelligence();
+
 
 // ─── Message router ───────────────────────────────────────────────────────────
 // IMPORTANT: handlers that respond asynchronously must return true.

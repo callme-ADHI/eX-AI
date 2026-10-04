@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { FocusSession } from '../../shared/types';
 import { KEYS } from '../../shared/storage';
 import FocusGlance from './FocusGlance';
-import SecurityGlance from './SecurityGlance';
 
 interface Props {
   container: HTMLDivElement;
@@ -16,9 +15,6 @@ const CLOSE_ZONE_PX = 320;
 
 export default function SidePanel({ container }: Props) {
   const [currentSession, setCurrentSession] = useState<FocusSession | null>(null);
-  const [currentOrigin, setCurrentOrigin] = useState(() => {
-    try { return window.location.origin; } catch { return ''; }
-  });
   const [open, setOpen] = useState(false);
 
   // Use ref so event handlers always read current value without re-registering
@@ -32,15 +28,12 @@ export default function SidePanel({ container }: Props) {
   // CRITICAL: pointer-events:none when closed so the page is fully interactive
   useEffect(() => {
     if (open) {
-      // Open: full-width, interactive
       container.style.setProperty('width',          '300px', 'important');
       container.style.setProperty('pointer-events', 'auto',  'important');
     } else {
-      // Closed: zero-width, invisible to mouse events — page clicks work normally
       container.style.setProperty('width',          '0px',   'important');
       container.style.setProperty('pointer-events', 'none',  'important');
     }
-    // Always keep position locked to right edge
     container.style.setProperty('position', 'fixed',      'important');
     container.style.setProperty('top',      '0',          'important');
     container.style.setProperty('bottom',   '0',          'important');
@@ -52,8 +45,6 @@ export default function SidePanel({ container }: Props) {
 
   // ── Read focus session from storage ──────────────────────────────────────
   useEffect(() => {
-    setCurrentOrigin(window.location.origin);
-
     const read = () =>
       chrome.storage.local.get(KEYS.CURRENT_SESSION, (res) =>
         setCurrentSession((res[KEYS.CURRENT_SESSION] as FocusSession) ?? null)
@@ -102,7 +93,6 @@ export default function SidePanel({ container }: Props) {
     };
 
     chrome.runtime?.onMessage?.addListener(handleMsg);
-    // Use capture so we get the event before any page script blocks it
     window.addEventListener('keydown', onKeyDown, { capture: true });
 
     return () => {
@@ -112,9 +102,6 @@ export default function SidePanel({ container }: Props) {
   }, []);
 
   // ── Mouse tracking ────────────────────────────────────────────────────────
-  // IMPORTANT: We attach to DOCUMENT with capture=true so this fires even if
-  // page elements stop event propagation. The container itself has
-  // pointer-events:none when closed, so we can't rely on mouseenter on it.
   useEffect(() => {
     const onMouseMove = (e: MouseEvent) => {
       const distFromRight = window.innerWidth - e.clientX;
@@ -128,7 +115,7 @@ export default function SidePanel({ container }: Props) {
         if (distFromRight > CLOSE_ZONE_PX) {
           scheduleClose();
         } else {
-          clearClose(); // mouse moved back into panel area
+          clearClose();
         }
       }
     };
@@ -137,7 +124,6 @@ export default function SidePanel({ container }: Props) {
       if (openRef.current) scheduleClose();
     };
 
-    // capture:true = fires on ALL elements, bypasses stopPropagation
     document.addEventListener('mousemove', onMouseMove, { capture: true, passive: true });
     document.addEventListener('mouseleave', onMouseLeave);
 
@@ -151,7 +137,6 @@ export default function SidePanel({ container }: Props) {
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'visible' }}>
 
-      {/* Subtle edge indicator — always visible at right edge, zero width so it doesn't block */}
       {!open && (
         <div style={{
           position: 'fixed',
@@ -191,7 +176,7 @@ export default function SidePanel({ container }: Props) {
               zIndex: 2147483647,
             }}
           >
-            {/* ── Top section: Focus timer (1/4 height) ── */}
+            {/* ── Top section: Focus timer ── */}
             <div style={{ flex: 1, padding: '20px 16px 12px', overflowY: 'auto' }}>
               <FocusGlance session={currentSession} />
             </div>
@@ -204,9 +189,9 @@ export default function SidePanel({ container }: Props) {
               background: 'rgba(255,255,255,0.06)',
             }} />
 
-            {/* ── Bottom section: Security panel (3/4 height) ── */}
+            {/* ── Bottom section: AI Chat placeholder (Phase 2 replaces this) ── */}
             <div style={{ flex: 3, padding: '12px 16px 20px', overflowY: 'auto' }}>
-              <SecurityGlance origin={currentOrigin} />
+              <div />
             </div>
 
             {/* Accent line on the left border */}
