@@ -1,8 +1,39 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import fs from 'fs';
 
 import type { Plugin } from 'vite';
+
+function inlineContentCssPlugin(): Plugin {
+  return {
+    name: 'inline-content-css',
+    generateBundle(_options, bundle) {
+      let contentCss = '';
+      for (const [fileName, file] of Object.entries(bundle)) {
+        if (fileName.endsWith('.css') && file.type === 'asset') {
+          contentCss += (typeof file.source === 'string' ? file.source : file.source.toString()) + '\n';
+        }
+      }
+      let tokensCss = '';
+      try {
+        tokensCss = fs.readFileSync(resolve(__dirname, 'src/newtab/styles/tokens.css'), 'utf8');
+      } catch (e) {
+        console.warn('[inlineContentCssPlugin] could not read tokens.css:', e);
+      }
+      const combinedCss = `${tokensCss}\n${contentCss}`;
+
+      for (const file of Object.values(bundle)) {
+        if (file.type === 'chunk' && file.code) {
+          file.code = file.code.replace(
+            /["'`]__EXAI_INLINED_STYLES__["'`]/g,
+            () => JSON.stringify(combinedCss)
+          );
+        }
+      }
+    },
+  };
+}
 
 function sanitizeUtf8Plugin(): Plugin {
   return {
@@ -23,7 +54,7 @@ function sanitizeUtf8Plugin(): Plugin {
 // Chrome loads content scripts as classic scripts, so they cannot use
 // top-level `import` statements produced by the ES module format.
 export default defineConfig({
-  plugins: [react(), sanitizeUtf8Plugin()],
+  plugins: [react(), inlineContentCssPlugin(), sanitizeUtf8Plugin()],
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
   },

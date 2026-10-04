@@ -16,6 +16,7 @@ interface Props {
   defaultWidth: number;
   applyOpenStyles: (el: HTMLElement, width: number) => void;
   applyClosedStyles: (el: HTMLElement) => void;
+  applySnipStyles?: (el: HTMLElement) => void;
 }
 
 type TabId = 'ai' | 'focus';
@@ -81,6 +82,7 @@ export default function SidePanel({
   defaultWidth,
   applyOpenStyles,
   applyClosedStyles,
+  applySnipStyles,
 }: Props) {
   const [currentSession, setCurrentSession] = useState<FocusSession | null>(null);
   const [open, setOpen] = useState(false);
@@ -120,12 +122,14 @@ export default function SidePanel({
 
   // ── Container styles ──────────────────────────────────────────────────────
   useEffect(() => {
-    if (open) {
+    if (screenshotUrl) {
+      if (applySnipStyles) applySnipStyles(container);
+    } else if (open) {
       applyOpenStyles(container, panelWidth);
     } else {
       applyClosedStyles(container);
     }
-  }, [open, panelWidth, container, applyOpenStyles, applyClosedStyles]);
+  }, [screenshotUrl, open, panelWidth, container, applyOpenStyles, applyClosedStyles, applySnipStyles]);
 
   // ── Focus session from storage ────────────────────────────────────────────
   useEffect(() => {

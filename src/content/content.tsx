@@ -42,6 +42,9 @@ const DEFAULT_PANEL_WIDTH = 420;
 let hostEl: HTMLDivElement | null = null;
 let shadowRootRef: ShadowRoot | null = null;
 
+// Inlined styles placeholder replaced at build time by inlineContentCssPlugin
+const INLINED_STYLES = '__EXAI_INLINED_STYLES__';
+
 function applyHostClosedStyles(el: HTMLElement) {
   el.style.setProperty('position',       'fixed',        'important');
   el.style.setProperty('top',            '0',            'important');
@@ -66,6 +69,20 @@ function applyHostOpenStyles(el: HTMLElement, width: number) {
   el.style.setProperty('pointer-events', 'auto',         'important');
   el.style.setProperty('background',     'transparent',  'important');
   el.style.setProperty('overflow',       'visible',      'important');
+}
+
+function applyHostSnipStyles(el: HTMLElement) {
+  el.style.setProperty('position',       'fixed',        'important');
+  el.style.setProperty('top',            '0',            'important');
+  el.style.setProperty('bottom',         '0',            'important');
+  el.style.setProperty('left',           '0',            'important');
+  el.style.setProperty('right',          '0',            'important');
+  el.style.setProperty('width',          '100vw',        'important');
+  el.style.setProperty('height',         '100vh',        'important');
+  el.style.setProperty('z-index',        '2147483647',   'important');
+  el.style.setProperty('pointer-events', 'auto',         'important');
+  el.style.setProperty('background',     'transparent',  'important');
+  el.style.setProperty('overflow',       'hidden',       'important');
 }
 
 function init() {
@@ -115,7 +132,23 @@ function init() {
   const shadowRoot = container.attachShadow({ mode: 'closed' });
   shadowRootRef = shadowRoot;
 
-  // Design tokens (from newtab build) + component styles
+  // 1. Constructable Stylesheet: CSP-immune on all Chromium platforms
+  if (typeof CSSStyleSheet !== 'undefined' && shadowRoot.adoptedStyleSheets) {
+    try {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(INLINED_STYLES);
+      shadowRoot.adoptedStyleSheets = [sheet];
+    } catch {
+      // Fallback to inline <style> below
+    }
+  }
+
+  // 2. Inline <style> tag: immediately applied even if page blocks <link>
+  const inlineStyle = document.createElement('style');
+  inlineStyle.textContent = `:host { all: initial; }\n${INLINED_STYLES}`;
+  shadowRoot.appendChild(inlineStyle);
+
+  // 3. Fallback <link> tags (for environments that allow web accessible resources)
   const tokensLink = document.createElement('link');
   tokensLink.rel = 'stylesheet';
   tokensLink.href = chrome.runtime.getURL('newtab.css');
@@ -125,10 +158,6 @@ function init() {
   stylesLink.rel = 'stylesheet';
   stylesLink.href = chrome.runtime.getURL('content.css');
   shadowRoot.appendChild(stylesLink);
-
-  const styleEl = document.createElement('style');
-  styleEl.textContent = ':host { all: initial; }';
-  shadowRoot.appendChild(styleEl);
 
   const mountPoint = document.createElement('div');
   mountPoint.style.height = '100%';
@@ -144,6 +173,7 @@ function init() {
         defaultWidth={DEFAULT_PANEL_WIDTH}
         applyOpenStyles={applyHostOpenStyles}
         applyClosedStyles={applyHostClosedStyles}
+        applySnipStyles={applyHostSnipStyles}
       />
     </React.StrictMode>
   );

@@ -106,8 +106,12 @@ export default function SnipOverlay({
       }
 
       const img = imgRef.current;
-      const naturalW = img.naturalWidth;
-      const naturalH = img.naturalHeight;
+      if (!img) {
+        onCancel();
+        return;
+      }
+      const naturalW = img.naturalWidth > 0 ? img.naturalWidth : Math.round(window.innerWidth * (window.devicePixelRatio || 1));
+      const naturalH = img.naturalHeight > 0 ? img.naturalHeight : Math.round(window.innerHeight * (window.devicePixelRatio || 1));
 
       const cropCoords = computeCropCoordinates(
         { x, y, width, height },
