@@ -22,6 +22,9 @@ import { initProductivityEngine, addTask, updateTask, deleteTask } from './produ
 import { initializeTabIntelligence } from './modules/tabIntelligence';
 import type { Message, MessageResponse } from '../shared/messaging';
 import { extractOrigin } from '../shared/utils';
+import { initAIClient } from './ai/nvidiaClient';
+import { handleSettingsGet, handleSettingsSet, handleKeySet, handleKeyClear } from './ai/settings';
+import { handleModelsList } from './ai/models';
 
 // ─── Service Worker Entry Point ───────────────────────────────────────────────
 
@@ -55,6 +58,7 @@ initTabEngine();
 
 initProductivityEngine();
 initializeTabIntelligence();
+initAIClient();
 
 
 // ─── Message router ───────────────────────────────────────────────────────────
@@ -152,6 +156,21 @@ async function handleMessage(msg: Message, sender: chrome.runtime.MessageSender)
     case 'DELETE_TASK':
       await deleteTask(msg.id);
       return;
+
+    case 'AI_SETTINGS_GET':
+      return handleSettingsGet();
+
+    case 'AI_SETTINGS_SET':
+      return handleSettingsSet(msg.settings);
+
+    case 'AI_KEY_SET':
+      return handleKeySet(msg.key);
+
+    case 'AI_KEY_CLEAR':
+      return handleKeyClear();
+
+    case 'AI_MODELS_LIST':
+      return handleModelsList(msg.refresh);
 
     default:
       throw new Error(`Unknown message type: ${(msg as Message).type}`);

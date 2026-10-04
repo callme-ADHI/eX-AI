@@ -25,7 +25,15 @@ export type Message =
       micAccessCount: number;
       fetchCount: number;
       permissions: Record<string, string>;
-    };
+    }
+  | { type: 'AI_SETTINGS_GET' }
+  | { type: 'AI_SETTINGS_SET'; settings: Partial<import('./aiTypes').ExAISettings> }
+  | { type: 'AI_KEY_SET'; key: string }
+  | { type: 'AI_KEY_CLEAR' }
+  | { type: 'AI_MODELS_LIST'; refresh?: boolean }
+  | { type: 'SNIP_CAPTURE' }
+  | { type: 'OCR_RUN'; dataUrl: string; mode: import('./aiTypes').OCRMode; psmHint?: number }
+  | { type: 'OCR_WARM' };
 
 export type MessageResponse<T = any> =
   | { ok: true; data: T }
