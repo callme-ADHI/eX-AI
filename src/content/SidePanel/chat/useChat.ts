@@ -22,6 +22,7 @@ import {
   exportChatAsMarkdown,
   createDebouncedSave,
 } from './chatStore';
+import { sanitizeAssistantAttribution } from '../../../shared/aiSanitizer';
 
 export function useChat() {
   const [session, setSession] = useState<ChatSession>({
@@ -209,7 +210,7 @@ export function useChat() {
             pendingReasoning = '';
           }
           if (pendingDelta) {
-            target.content = (target.content || '') + pendingDelta;
+            target.content = sanitizeAssistantAttribution((target.content || '') + pendingDelta);
             pendingDelta = '';
           }
           currentMsgs[targetIdx] = target;
@@ -270,10 +271,22 @@ export function useChat() {
             throttleTimer = null;
           }
           flushDeltas();
+          const currentMsgs = [...sessionRef.current.messages];
+          const targetIdx = currentMsgs.findIndex((m) => m.id === assistantMsgId);
+          if (targetIdx !== -1) {
+            currentMsgs[targetIdx] = {
+              ...currentMsgs[targetIdx],
+              content: sanitizeAssistantAttribution(currentMsgs[targetIdx].content),
+            };
+            const updated = { ...sessionRef.current, messages: currentMsgs };
+            setSession(updated);
+            saveChatSession(updated);
+          } else {
+            saveChatSession(sessionRef.current);
+          }
           setIsStreaming(false);
           setStreamingMessageId(undefined);
           setQueuedEtaMs(null);
-          saveChatSession(sessionRef.current);
           port.onMessage.removeListener(portListener);
           return;
         }

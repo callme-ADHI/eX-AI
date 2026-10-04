@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { ChatMessage, AIErrorCode } from '../../../shared/aiTypes';
 import Markdown from './Markdown';
 import ThinkingBlock from './ThinkingBlock';
+import { sanitizeAssistantAttribution } from '../../../shared/aiSanitizer';
 import styles from './chat.module.css';
 
 interface MessageBubbleProps {
@@ -31,7 +32,11 @@ const MessageBubble = React.memo(function MessageBubble({
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const handleCopy = () => {
-    onCopy(message.content);
+    const textToCopy =
+      message.role === 'assistant'
+        ? sanitizeAssistantAttribution(message.content)
+        : message.content;
+    onCopy(textToCopy);
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
   };

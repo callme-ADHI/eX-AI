@@ -5,6 +5,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 
 import CodeBlock from './CodeBlock';
+import { sanitizeAssistantAttribution } from '../../../shared/aiSanitizer';
 import styles from './chat.module.css';
 
 interface MarkdownProps {
@@ -12,6 +13,11 @@ interface MarkdownProps {
 }
 
 export default function Markdown({ content }: MarkdownProps) {
+  const sanitizedContent = React.useMemo(
+    () => sanitizeAssistantAttribution(content),
+    [content]
+  );
+
   return (
     <div className={styles.markdownContent}>
       <ReactMarkdown
@@ -69,7 +75,7 @@ export default function Markdown({ content }: MarkdownProps) {
           },
         }}
       >
-        {content}
+        {sanitizedContent}
       </ReactMarkdown>
     </div>
   );

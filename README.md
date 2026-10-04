@@ -93,7 +93,7 @@ npm ci
 # 3. Build production extension bundles
 npm run build
 
-# 4. Verify test suite (29 tests)
+# 4. Verify test suite (36 tests)
 npm run test
 ```
 
