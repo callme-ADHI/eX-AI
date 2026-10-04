@@ -36,6 +36,18 @@ export default function ChatHeader({
 
   return (
     <div className={styles.header}>
+      {/* Brand title bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '2px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>
+            ⚡ eX-AI
+          </span>
+          <span style={{ fontSize: '10px', color: '#7094ff', fontWeight: 600, background: 'rgba(36, 82, 255, 0.15)', padding: '1px 6px', borderRadius: '4px' }}>
+            by ADHI
+          </span>
+        </div>
+      </div>
+
       {/* Top row: Mode selector + action icons */}
       <div className={styles.headerRowTop}>
         <div className={styles.modeSelector}>
@@ -82,12 +94,13 @@ export default function ChatHeader({
       <div className={styles.headerRowSub}>
         <select
           className={styles.modelSelect}
+          style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
           value={selectedModel}
           onChange={(e) => onModelChange(e.target.value)}
           title="Active NIM Model"
         >
           {models.map((m) => (
-            <option key={m.id} value={m.id}>
+            <option key={m.id} value={m.id} style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>
               {m.label || m.id}
             </option>
           ))}

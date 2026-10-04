@@ -110,11 +110,12 @@
 
 .modelSelect {
   flex: 1;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #14141c;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
   padding: 4px 8px;
   color: #e8e8f0;
+  color-scheme: dark;
   font-size: 11px;
   outline: none;
   cursor: pointer;
@@ -122,6 +123,12 @@
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
+}
+
+.modelSelect option {
+  background-color: #161622;
+  color: #e8e8f0;
+  padding: 6px 10px;
 }
 
 .modelSelect:focus-visible {
@@ -794,13 +801,20 @@
 }
 
 .fieldInput {
-  background: rgba(255, 255, 255, 0.04);
+  background-color: #14141c;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
   padding: 8px 10px;
   color: #ffffff;
+  color-scheme: dark;
   font-size: 12px;
   outline: none;
+}
+
+.fieldInput option {
+  background-color: #161622;
+  color: #e8e8f0;
+  padding: 8px 10px;
 }
 
 .fieldInput:focus {

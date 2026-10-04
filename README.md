@@ -1,6 +1,6 @@
 # eX-AI
 
-> **eX-AI** is an instrument-grade Chrome extension (Manifest V3) featuring a right-edge slide-in **AI Practice Companion** with **100% offline screen-snip-to-text (OCR)** powered by local Tesseract.js WebAssembly and the NVIDIA NIM developer API.
+> **eX-AI** is an instrument-grade Chrome extension (Manifest V3) created and built by **ADHI**. It features a right-edge slide-in **AI Practice Companion** with **100% offline screen-snip-to-text (OCR)** powered by local Tesseract.js WebAssembly and the NVIDIA NIM developer API.
 
 ---
 
@@ -47,7 +47,7 @@
 ### 1. Build from Source
 ```bash
 # Clone the repository
-git clone https://github.com/callme-ADHI/eX1.git eX-AI
+git clone https://github.com/callme-ADHI/eX-AI.git
 cd eX-AI
 
 # Install dependencies
@@ -108,3 +108,10 @@ npm run test
 ## ⚖️ Responsible Use
 
 eX-AI is designed as an interactive study and preparation instrument for campus placement exams, competitive programming practice, and technical interview simulations. Please adhere to institutional academic integrity standards and assessment guidelines during formal examinations and tests.
+
+---
+
+## 👨‍💻 Author
+
+Created and built by **ADHI** ([@callme-ADHI](https://github.com/callme-ADHI)).
+

@@ -65,7 +65,7 @@ export default function MessageList({
       return (
         <div className={styles.emptyState}>
           <div className={styles.emptyIcon}>🔑</div>
-          <div className={styles.emptyTitle}>Welcome to eX-AI</div>
+          <div className={styles.emptyTitle}>Welcome to eX-AI by ADHI</div>
           <div className={styles.emptyText}>
             To start practising aptitude, coding, and reasoning questions, please provide your free NVIDIA API key.
           </div>
@@ -80,6 +80,7 @@ export default function MessageList({
       <div className={styles.emptyState}>
         <div className={styles.emptyIcon}>⚡</div>
         <div className={styles.emptyTitle}>eX-AI Practice Assistant</div>
+        <div style={{ fontSize: '11px', color: '#7094ff', fontWeight: 600, marginTop: '-6px' }}>Built by ADHI</div>
         <div className={styles.emptyText}>
           Ask any aptitude problem, coding question, or puzzle. Or click <strong>Snip</strong> to OCR questions directly from the screen!
         </div>

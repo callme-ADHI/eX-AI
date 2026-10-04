@@ -150,11 +150,12 @@ export default function SettingsDrawer({
           <label className={styles.fieldLabel}>Default Model</label>
           <select
             className={styles.fieldInput}
+            style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
             value={settings.model}
             onChange={(e) => onUpdateSettings({ model: e.target.value })}
           >
             {models.map((m) => (
-              <option key={m.id} value={m.id}>
+              <option key={m.id} value={m.id} style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>
                 {m.label || m.id}
               </option>
             ))}
@@ -166,14 +167,15 @@ export default function SettingsDrawer({
           <label className={styles.fieldLabel}>Edge Trigger Style</label>
           <select
             className={styles.fieldInput}
+            style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
             value={settings.edgeTrigger}
             onChange={(e) =>
               onUpdateSettings({ edgeTrigger: e.target.value as any })
             }
           >
-            <option value="strip">Strip + Handle (hover right edge or handle)</option>
-            <option value="handle">Handle only (hover or click pill handle)</option>
-            <option value="off">Off (keyboard shortcut only)</option>
+            <option value="strip" style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>Strip + Handle (hover right edge or handle)</option>
+            <option value="handle" style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>Handle only (hover or click pill handle)</option>
+            <option value="off" style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>Off (keyboard shortcut only)</option>
           </select>
         </div>
 
@@ -199,13 +201,14 @@ export default function SettingsDrawer({
           <label className={styles.fieldLabel}>Default OCR Mode</label>
           <select
             className={styles.fieldInput}
+            style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
             value={settings.ocrDefaultMode}
             onChange={(e) =>
               onUpdateSettings({ ocrDefaultMode: e.target.value as any })
             }
           >
-            <option value="text">Text mode (smart line wrap & clean formatting)</option>
-            <option value="code">Code mode (preserves indentation & whitespace)</option>
+            <option value="text" style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>Text mode (smart line wrap & clean formatting)</option>
+            <option value="code" style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>Code mode (preserves indentation & whitespace)</option>
           </select>
         </div>
 
@@ -253,6 +256,20 @@ export default function SettingsDrawer({
           }}
         >
           ℹ️ <strong>NVIDIA NIM Free Tier:</strong> Designed for development & prototyping with ~40 requests/minute shared across all models. Requests in excess of rate limits will queue smoothly.
+        </div>
+
+        {/* Credit: Built by ADHI */}
+        <div
+          style={{
+            textAlign: 'center',
+            fontSize: '11px',
+            color: 'rgba(232, 232, 240, 0.45)',
+            marginTop: '8px',
+            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+            paddingTop: '12px',
+          }}
+        >
+          eX-AI v2.0 · Built with ⚡ by <strong style={{ color: '#7094ff' }}>ADHI</strong>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useChat } from './useChat';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
@@ -55,6 +55,13 @@ export default function ChatPanel({
   const [composerText, setComposerText] = useState(initialInput || '');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  // Sync external input changes (e.g. from OCR or parent SidePanel)
+  useEffect(() => {
+    if (initialInput !== undefined && initialInput !== composerText) {
+      setComposerText(initialInput);
+    }
+  }, [initialInput]);
 
   // Sync external input changes (e.g. from OCR)
   const handleComposerChange = useCallback(

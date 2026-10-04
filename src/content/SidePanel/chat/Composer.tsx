@@ -43,9 +43,14 @@ export default function Composer({
   }, [input]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+      if (e.shiftKey) {
+        // Shift + Enter: allow default newline insertion
+        return;
+      }
+      // Enter: send chat
       e.preventDefault();
-      if (!isStreaming && input.trim() && !attachment?.loading) {
+      if (!isStreaming && input.trim()) {
         onSend();
       }
     }

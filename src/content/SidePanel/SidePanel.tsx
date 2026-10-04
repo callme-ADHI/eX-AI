@@ -101,6 +101,7 @@ export default function SidePanel({
   const isResizingRef = useRef(false);
   const resizeStartXRef = useRef(0);
   const resizeStartWidthRef = useRef(0);
+  const lastCloseTimeRef = useRef(0);
 
   useEffect(() => { openRef.current = open; }, [open]);
   useEffect(() => { panelWidthRef.current = panelWidth; }, [panelWidth]);
@@ -144,12 +145,15 @@ export default function SidePanel({
 
   // ── Open panel ────────────────────────────────────────────────────────────
   const openPanel = useCallback(() => {
+    openRef.current = true;
     previousFocusRef.current = document.activeElement;
     setOpen(true);
   }, []);
 
   // ── Close panel ──────────────────────────────────────────────────────────
   const closePanel = useCallback(() => {
+    lastCloseTimeRef.current = Date.now();
+    openRef.current = false;
     setOpen(false);
     setTimeout(() => {
       if (previousFocusRef.current && (previousFocusRef.current as HTMLElement).focus) {
@@ -231,19 +235,16 @@ export default function SidePanel({
           return;
         }
 
-        // Success: update chip and append text to composer
-        setOcrAttachment({
-          thumbnail: snip.thumbnail,
-          confidence: ocrData.confidence,
-          mode: snip.mode as any,
-          loading: false,
-        });
-
+        // Success: append text to composer and delete screenshot (don't save it)
         setComposerInput((prev) => {
           const trimmed = prev.trim();
           if (!trimmed) return text;
           return `${trimmed}\n\n${text}`;
         });
+
+        // Delete temporary screenshot and thumbnail immediately after text extraction
+        setOcrAttachment(null);
+        lastCroppedDataUrlRef.current = null;
       }
     );
   }, []);
@@ -294,7 +295,24 @@ export default function SidePanel({
     );
   }, []);
 
-  // ── Keyboard shortcut & messages ──────────────────────────────────────────
+  // ── Auto-popup when mouse moves to right edge ─────────────────────────────
+  useEffect(() => {
+    const onMouseMove = (e: MouseEvent) => {
+      if (screenshotUrl) return;
+      if (Date.now() - lastCloseTimeRef.current < 600) return;
+      const distFromRight = window.innerWidth - e.clientX;
+      if (!openRef.current && distFromRight <= 25) {
+        openPanel();
+      }
+    };
+
+    window.addEventListener('mousemove', onMouseMove, { capture: true, passive: true });
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove, { capture: true });
+    };
+  }, [openPanel, screenshotUrl]);
+
+  // ── Keyboard shortcut & messages (Ctrl+Space) ─────────────────────────────
   useEffect(() => {
     const handleMsg = (msg: any) => {
       if (msg.type === 'TOGGLE_HUD') {
@@ -307,12 +325,12 @@ export default function SidePanel({
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      // If SnipOverlay is open, let it handle Esc
       if (screenshotUrl) return;
 
-      if (e.ctrlKey && !e.isComposing && (e.key === ' ' || e.code === 'Space')) {
+      // Ctrl + Space always toggles or opens panel
+      if (e.ctrlKey && (e.key === ' ' || e.code === 'Space')) {
         e.preventDefault();
-        e.stopImmediatePropagation();
+        e.stopPropagation();
         if (openRef.current) closePanel();
         else openPanel();
         return;
@@ -333,22 +351,22 @@ export default function SidePanel({
   }, [openPanel, closePanel, triggerSnip, screenshotUrl]);
 
   // ── Keyboard isolation ────────────────────────────────────────────────────
+  // Stop keystrokes inside panel from bubbling up to document and window
+  // (so host sites like YouTube, Gmail, GitHub never receive them),
+  // while allowing React inside the panel to receive all events normally.
   useEffect(() => {
-    const stopIfInPanel = (e: KeyboardEvent) => {
-      const path = e.composedPath();
-      if (path.includes(container)) {
-        e.stopImmediatePropagation();
-      }
+    const stopBubble = (e: Event) => {
+      e.stopPropagation();
     };
 
-    window.addEventListener('keydown',  stopIfInPanel, { capture: true });
-    window.addEventListener('keyup',    stopIfInPanel, { capture: true });
-    window.addEventListener('keypress', stopIfInPanel, { capture: true });
+    container.addEventListener('keydown',  stopBubble);
+    container.addEventListener('keyup',    stopBubble);
+    container.addEventListener('keypress', stopBubble);
 
     return () => {
-      window.removeEventListener('keydown',  stopIfInPanel, { capture: true });
-      window.removeEventListener('keyup',    stopIfInPanel, { capture: true });
-      window.removeEventListener('keypress', stopIfInPanel, { capture: true });
+      container.removeEventListener('keydown',  stopBubble);
+      container.removeEventListener('keyup',    stopBubble);
+      container.removeEventListener('keypress', stopBubble);
     };
   }, [container]);
 
