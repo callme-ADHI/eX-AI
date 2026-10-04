@@ -1,0 +1,115 @@
+import React from 'react';
+import type { AIMode, ModelEntry } from '../../../shared/aiTypes';
+import styles from './chat.module.css';
+
+interface ChatHeaderProps {
+  mode: AIMode;
+  onModeChange: (mode: AIMode) => void;
+  models: ModelEntry[];
+  selectedModel: string;
+  onModelChange: (model: string) => void;
+  think: boolean;
+  onToggleThink: () => void;
+  onNewChat: () => void;
+  onOpenHistory: () => void;
+  onOpenSettings: () => void;
+}
+
+export default function ChatHeader({
+  mode,
+  onModeChange,
+  models,
+  selectedModel,
+  onModelChange,
+  think,
+  onToggleThink,
+  onNewChat,
+  onOpenHistory,
+  onOpenSettings,
+}: ChatHeaderProps) {
+  const modes: Array<{ id: AIMode; label: string }> = [
+    { id: 'general', label: 'General' },
+    { id: 'aptitude', label: 'Aptitude' },
+    { id: 'coding', label: 'Coding' },
+    { id: 'reasoning', label: 'Reasoning' },
+  ];
+
+  return (
+    <div className={styles.header}>
+      {/* Top row: Mode selector + action icons */}
+      <div className={styles.headerRowTop}>
+        <div className={styles.modeSelector}>
+          {modes.map((m) => (
+            <button
+              key={m.id}
+              className={`${styles.modeBtn} ${mode === m.id ? styles.modeBtnActive : ''}`}
+              onClick={() => onModeChange(m.id)}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        <div className={styles.headerActions}>
+          <button
+            className={styles.iconBtn}
+            onClick={onNewChat}
+            title="Start new chat"
+            aria-label="New chat"
+          >
+            ➕
+          </button>
+          <button
+            className={styles.iconBtn}
+            onClick={onOpenHistory}
+            title="Chat history"
+            aria-label="History"
+          >
+            🕒
+          </button>
+          <button
+            className={styles.iconBtn}
+            onClick={onOpenSettings}
+            title="Settings"
+            aria-label="Settings"
+          >
+            ⚙️
+          </button>
+        </div>
+      </div>
+
+      {/* Sub row: Model dropdown + Think toggle */}
+      <div className={styles.headerRowSub}>
+        <select
+          className={styles.modelSelect}
+          value={selectedModel}
+          onChange={(e) => onModelChange(e.target.value)}
+          title="Active NIM Model"
+        >
+          {models.map((m) => (
+            <option key={m.id} value={m.id}>
+              {m.label || m.id}
+            </option>
+          ))}
+        </select>
+
+        <div
+          className={`${styles.thinkToggle} ${think ? styles.thinkToggleActive : ''}`}
+          onClick={onToggleThink}
+          role="button"
+          tabIndex={0}
+          title="Toggle Reasoning / Thinking output"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onToggleThink();
+            }
+          }}
+        >
+          <span>🧠</span>
+          <span>Think</span>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,814 @@
+/* ─── eX-AI Chat Styles ──────────────────────────────────────────────────────── */
+
+.chatContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  color: #e8e8f0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+.chatContainer * {
+  box-sizing: border-box;
+}
+
+/* ─── Header ───────────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(14, 14, 18, 0.7);
+  flex-shrink: 0;
+}
+
+.headerRowTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.modeSelector {
+  display: flex;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 2px;
+  gap: 2px;
+  overflow-x: auto;
+}
+
+.modeBtn {
+  background: transparent;
+  border: none;
+  border-radius: 4px;
+  padding: 3px 8px;
+  color: rgba(232, 232, 240, 0.6);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.modeBtn:hover {
+  color: #ffffff;
+}
+
+.modeBtnActive {
+  background: rgba(36, 82, 255, 0.25);
+  color: #7094ff;
+  border: 1px solid rgba(36, 82, 255, 0.4);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.iconBtn {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px;
+  color: rgba(232, 232, 240, 0.6);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.iconBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.iconBtn:focus-visible {
+  outline: 2px solid #2452ff;
+  outline-offset: 1px;
+}
+
+.headerRowSub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.modelSelect {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  padding: 4px 8px;
+  color: #e8e8f0;
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+  max-width: calc(100% - 100px);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.modelSelect:focus-visible {
+  border-color: #2452ff;
+}
+
+.thinkToggle {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(232, 232, 240, 0.7);
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.thinkToggleActive {
+  background: rgba(138, 43, 226, 0.15);
+  border-color: rgba(138, 43, 226, 0.35);
+  color: #d19fe8;
+}
+
+/* ─── Message List ─────────────────────────────────────────────────────────── */
+.messageList {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scroll-behavior: smooth;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  gap: 12px;
+  color: rgba(232, 232, 240, 0.5);
+  padding: 24px 16px;
+}
+
+.emptyIcon {
+  font-size: 36px;
+  opacity: 0.8;
+}
+
+.emptyTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.emptyText {
+  font-size: 12px;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.setupBtn {
+  background: #2452ff;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  margin-top: 6px;
+}
+
+.setupBtn:hover {
+  opacity: 0.9;
+}
+
+/* ─── Message Bubbles ──────────────────────────────────────────────────────── */
+.userRow {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.userBubble {
+  background: #1e3a8a;
+  color: #f1f5f9;
+  padding: 10px 14px;
+  border-radius: 12px 12px 2px 12px;
+  max-width: 88%;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 13px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.assistantRow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.assistantBubble {
+  background: rgba(24, 24, 30, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px 12px 12px 2px;
+  padding: 12px 14px;
+  color: #e2e8f0;
+  word-break: break-word;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  line-height: 1.6;
+}
+
+.modelBadge {
+  font-size: 10px;
+  color: rgba(232, 232, 240, 0.4);
+  font-family: 'IBM Plex Mono', monospace;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.bubbleActions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  align-self: flex-start;
+}
+
+.assistantRow:hover .bubbleActions,
+.userRow:hover .bubbleActions {
+  opacity: 1;
+}
+
+.actionBtnSmall {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  color: rgba(232, 232, 240, 0.6);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+
+.actionBtnSmall:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+/* ─── Blinking Caret & Streaming ───────────────────────────────────────────── */
+.caret {
+  display: inline-block;
+  width: 6px;
+  height: 14px;
+  background: #7094ff;
+  vertical-align: middle;
+  margin-left: 2px;
+  animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+.queuedNotice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 6px;
+  padding: 6px 10px;
+  margin-bottom: 8px;
+}
+
+/* ─── Thinking Block ───────────────────────────────────────────────────────── */
+.thinkingBlock {
+  background: rgba(18, 16, 26, 0.65);
+  border: 1px solid rgba(138, 43, 226, 0.25);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.thinkingHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: rgba(138, 43, 226, 0.1);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  color: #c084fc;
+}
+
+.thinkingHeader:hover {
+  background: rgba(138, 43, 226, 0.18);
+}
+
+.thinkingContent {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: rgba(232, 232, 240, 0.7);
+  white-space: pre-wrap;
+  border-top: 1px solid rgba(138, 43, 226, 0.15);
+  font-family: inherit;
+  line-height: 1.5;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+/* ─── Markdown Content ─────────────────────────────────────────────────────── */
+.markdownContent {
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.markdownContent p {
+  margin: 0 0 10px 0;
+}
+
+.markdownContent p:last-child {
+  margin-bottom: 0;
+}
+
+.markdownContent h1,
+.markdownContent h2,
+.markdownContent h3,
+.markdownContent h4 {
+  margin: 14px 0 8px 0;
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.markdownContent h1 { font-size: 16px; }
+.markdownContent h2 { font-size: 14px; }
+.markdownContent h3 { font-size: 13px; }
+
+.markdownContent ul,
+.markdownContent ol {
+  margin: 6px 0 10px 0;
+  padding-left: 20px;
+}
+
+.markdownContent li {
+  margin-bottom: 4px;
+}
+
+.markdownContent table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+  font-size: 12px;
+}
+
+.markdownContent th,
+.markdownContent td {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.markdownContent th {
+  background: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.markdownContent blockquote {
+  border-left: 3px solid #2452ff;
+  margin: 8px 0;
+  padding: 4px 12px;
+  background: rgba(36, 82, 255, 0.08);
+  color: rgba(232, 232, 240, 0.85);
+}
+
+.markdownContent a {
+  color: #7094ff;
+  text-decoration: underline;
+}
+
+.markdownContent code:not(pre code) {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: #fca5a5;
+}
+
+/* ─── Code Block ───────────────────────────────────────────────────────────── */
+.codeBlockWrapper {
+  background: #0d1117;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin: 10px 0;
+  overflow: hidden;
+}
+
+.codeBlockHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  color: rgba(232, 232, 240, 0.6);
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.copyCodeBtn {
+  background: transparent;
+  border: none;
+  color: rgba(232, 232, 240, 0.6);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: all 0.15s ease;
+}
+
+.copyCodeBtn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.codeBlockPre {
+  margin: 0;
+  padding: 12px;
+  overflow-x: auto;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #e6edf3;
+}
+
+/* highlight.js theme colors (Dark GitHub style in CSS, no font-face) */
+:global(.hljs-keyword), :global(.hljs-selector-tag), :global(.hljs-subst) { color: #ff7b72; font-weight: 600; }
+:global(.hljs-string), :global(.hljs-title), :global(.hljs-section), :global(.hljs-attribute), :global(.hljs-literal), :global(.hljs-template-tag), :global(.hljs-template-variable), :global(.hljs-type), :global(.hljs-addition) { color: #a5d6ff; }
+:global(.hljs-comment), :global(.hljs-quote), :global(.hljs-deletion), :global(.hljs-meta) { color: #8b949e; font-style: italic; }
+:global(.hljs-number), :global(.hljs-regexp), :global(.hljs-link) { color: #79c0ff; }
+:global(.hljs-variable), :global(.hljs-variable.language_) { color: #ffa657; }
+:global(.hljs-built_in), :global(.hljs-symbol) { color: #d2a8ff; }
+:global(.hljs-function) { color: #d2a8ff; }
+
+/* ─── Error Row ────────────────────────────────────────────────────────────── */
+.errorRow {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.errorText {
+  color: #fca5a5;
+  font-size: 11px;
+}
+
+.retryBtn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fee2e2;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.retryBtn:hover {
+  background: rgba(239, 68, 68, 0.35);
+}
+
+/* ─── Jump to Latest Button ────────────────────────────────────────────────── */
+.jumpLatestBtn {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 11px;
+  color: #e2e8f0;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  z-index: 5;
+  transition: all 0.15s ease;
+}
+
+.jumpLatestBtn:hover {
+  background: rgba(40, 55, 80, 0.95);
+  color: #ffffff;
+}
+
+/* ─── Composer ─────────────────────────────────────────────────────────────── */
+.composer {
+  padding: 10px 14px 14px 14px;
+  background: rgba(14, 14, 18, 0.85);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.attachmentArea {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.attachmentChip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.chipThumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+.confidenceBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 5px;
+  border-radius: 4px;
+}
+
+.confidenceHigh {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.confidenceMedium {
+  background: rgba(245, 158, 11, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.confidenceLow {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.textareaWrapper {
+  flex: 1;
+  position: relative;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  transition: border-color 0.15s ease;
+}
+
+.textareaWrapper:focus-within {
+  border-color: #2452ff;
+}
+
+.composerTextarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 8px 10px;
+  color: #ffffff;
+  font-size: 13px;
+  font-family: inherit;
+  resize: none;
+  min-height: 36px;
+  max-height: 160px;
+  line-height: 1.4;
+  display: block;
+}
+
+.charWarn {
+  font-size: 10px;
+  color: #fbbf24;
+  padding: 0 8px 4px 8px;
+  text-align: right;
+}
+
+.composerButtons {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.snipBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(232, 232, 240, 0.7);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.snipBtn:hover {
+  background: rgba(36, 82, 255, 0.15);
+  color: #7094ff;
+  border-color: rgba(36, 82, 255, 0.4);
+}
+
+.sendBtn {
+  background: #2452ff;
+  border: none;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sendBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.sendBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.stopBtn {
+  background: #dc2626;
+  border: none;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+
+.stopBtn:hover {
+  opacity: 0.9;
+}
+
+/* ─── Drawers (History, Settings) ──────────────────────────────────────────── */
+.drawerOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(8px);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+}
+
+.drawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.drawerBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.drawerItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.drawerItem:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.drawerItemActive {
+  background: rgba(36, 82, 255, 0.15);
+  border-color: rgba(36, 82, 255, 0.4);
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(232, 232, 240, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fieldInput {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #ffffff;
+  font-size: 12px;
+  outline: none;
+}
+
+.fieldInput:focus {
+  border-color: #2452ff;
+}
+
+.fieldNote {
+  font-size: 11px;
+  color: rgba(232, 232, 240, 0.45);
+  line-height: 1.4;
+}

@@ -5,6 +5,7 @@ import { KEYS } from '../../shared/storage';
 import FocusGlance from './FocusGlance';
 import EdgeTrigger from './EdgeTrigger';
 import Tabs from './Tabs';
+import ChatPanel from './chat/ChatPanel';
 
 interface Props {
   container: HTMLDivElement;
@@ -317,31 +318,7 @@ export default function SidePanel({
             <PanelErrorBoundary>
               <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 {activeTab === 'ai' && (
-                  <div style={{
-                    flex: 1,
-                    padding: '12px 16px 20px',
-                    overflowY: 'auto',
-                    overscrollBehavior: 'contain',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}>
-                    {/* Phase 4: ChatPanel will replace this placeholder */}
-                    <div style={{
-                      flex: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: 'rgba(232,232,240,0.3)',
-                      fontSize: '13px',
-                      textAlign: 'center',
-                    }}>
-                      <div>
-                        <div style={{ fontSize: '32px', marginBottom: '8px' }}>🤖</div>
-                        <div>eX-AI Chat</div>
-                        <div style={{ fontSize: '11px', marginTop: '4px', opacity: 0.6 }}>Coming in Phase 4</div>
-                      </div>
-                    </div>
-                  </div>
+                  <ChatPanel />
                 )}
 
                 {activeTab === 'focus' && (
