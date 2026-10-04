@@ -2,9 +2,26 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
+import type { Plugin } from 'vite';
+
+function sanitizeUtf8Plugin(): Plugin {
+  return {
+    name: 'sanitize-utf8',
+    generateBundle(_options, bundle) {
+      for (const file of Object.values(bundle)) {
+        if (file.type === 'chunk' && file.code) {
+          file.code = file.code.replace(/[\uFDD0-\uFDEF\uFFFE\uFFFF]/g, (char) => {
+            return '\\u' + char.charCodeAt(0).toString(16).padStart(4, '0');
+          });
+        }
+      }
+    },
+  };
+}
+
 // Main build: newtab dashboard + background service worker
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), sanitizeUtf8Plugin()],
   build: {
     emptyOutDir: true,
     rollupOptions: {
