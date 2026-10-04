@@ -1,80 +1,110 @@
-# eX-AI by Aevoarx
+# eX-AI
 
-> **eX1** is an instrument-grade browser companion that seamlessly integrates cybersecurity intelligence, focus/productivity metrics, and smart web utilities into a unified, high-performance browser extension.
-
-Developed by **Aevoarx**, eX1 is designed for security professionals, developers, and power users who require real-time cyber threat analytics and focus management without sacrificing browser performance.
+> **eX-AI** is an instrument-grade Chrome extension (Manifest V3) featuring a right-edge slide-in **AI Practice Companion** with **100% offline screen-snip-to-text (OCR)** powered by local Tesseract.js WebAssembly and the NVIDIA NIM developer API.
 
 ---
 
-## Key Modules & Features
+## 🌟 Key Features
 
-### 1. Cybersecurity Intelligence Engine (3/4 Screen Real Estate)
-Provides instant OSINT data retrieval and website fingerprinting dynamically, featuring:
-- **Safety Index**: A real-time heuristic hazard score (0–100%) highlighting typosquatting, IDN homograph attacks, and suspicious domains.
-- **HTTPS & SSL Certificate Details**: Live verification of TLS handshake details, validity periods, and issuer information.
-- **Server Metadata**: Geolocation mapping, ASN lookup, hosting organization detection, and reverse IP queries.
-- **Domain Age & Registrar Registry**: Accesses RDAP registries to determine domain registration timelines, expiration data, and nameservers.
-- **Domain History Timeline**: Comprehensive history of important domain events (Registration, SSL issuance/renewals, and reputation alerts).
-- **Website Fingerprint**: Technical categorization, trust level, region mapping, hosting infrastructure type, and tech-stack analysis.
-- **Risk Indicators**: Real-time identification of suspicious patterns (e.g. excessive subdomains, randomized DGAs).
-- **Active Permissions Monitor**: Real-time auditing of browser capabilities such as camera, microphone, geolocation, and clipboard.
+1. **Slide-In AI Companion Panel**:
+   - Slides smoothly from the right edge with customizable triggers (edge hover strip, visible pill handle, or keyboard shortcut).
+   - Sticky chat interface that never auto-closes while you compose or read answers.
+   - Resizable width (340px to 720px) with live drag handle and persistent preferences.
+   - Hardened with **Closed Shadow DOM** and keyboard isolation so typing never interferes with host page shortcuts (YouTube, Gmail, GitHub).
 
-### 2. Focus & Productivity HUD (1/4 Screen Real Estate)
-An integrated focus cockpit directly next to the security view:
-- **Focus Timer**: Configurable pomodoro-style sessions with study, code, and research presets.
-- **Productivity Profile**: Weekly and daily rollups of web activity categorized by productive vs. distracting usage.
-- **Task Management**: Simple task manager to track focus targets for the active session.
+2. **Offline Screen-to-Text OCR (Snip)**:
+   - Drag a rectangle anywhere on screen to extract printed text or code.
+   - **Zero network requests**: Runs completely offline using Tesseract.js (LSTM English engine) inside an MV3 offscreen Web Worker.
+   - Multi-stage image preprocessing: auto-upscaling, Rec. 709 grayscale, auto-dark-mode background inversion, and contrast stretching.
+   - **Text mode**: Auto-joins soft-wrapped lines, de-hyphenates breaks, and normalizes ligatures.
+   - **Code mode**: Preserves exact indentation, line breaks, and whitespace.
+   - Interactive attachment chip with confidence rating, crop thumbnail preview, and mode re-run controls.
 
-### 3. Shortcut Dock & Dashboard
-A macOS-style dock at the bottom of the new tab page featuring:
-- **Tactile Sound Effects**: Interactive mechanical "tick" sound feedback on icon hover and slide.
-- **Dynamic Scale & Glow**: Smooth, physics-based scale expansion (similar to macOS) with custom back-glows.
-- **Hover Deletion**: An intuitive floating close (`×`) button on hover to delete shortcuts instantly.
-- **Drag-and-Drop Sorting**: Easily sort your shortcuts.
+3. **High-Performance Practice AI**:
+   - Designed for campus placements, technical interviews, and aptitude preparation.
+   - Dedicated modes:
+     - **Aptitude**: Quant, logical, verbal with formulas, step-by-step arithmetic verification, and shortcuts.
+     - **Coding**: Problem restatement, optimal Big-O analysis, full runnable code blocks, sample dry runs, and edge cases.
+     - **Reasoning**: Syllogisms, puzzles, arrangements, elimination tables, and contradiction checks.
+     - **General**: Versatile coding and engineering assistant.
+   - **Configurable Reasoning (Think toggle)**: Deep-thinking chains stream into a live collapsible accordion with execution duration.
+   - **MathML Math Rendering**: Equations rendered via pure MathML without web font dependencies in Shadow DOM.
+   - **Syntax Highlighting**: Pre-bundled syntax highlighting for Python, C++, C, Java, JavaScript, TypeScript, SQL, Bash, and JSON without external stylesheets.
 
----
-
-## Code Architecture
-
-The extension is modularly structured:
-- `src/background/service-worker.ts`: Master background broker handling alarms, messaging, tab change listeners, and engine initialization.
-- `src/background/securityEngine.ts`: The central cybersecurity engine. Bypasses CSP restrictions and retrieves live RDAP and Geo-IP info asynchronously.
-- `src/content/content.tsx` & `tracker.ts`: Content scripts injected in the MAIN world to monitor DOM mutations and hook native media APIs safely.
-- `src/newtab/`: React application rendering the eX1 Dashboard page.
-- `src/shared/`: Centralized types, defaults, preset icons, and local storage utilities.
+4. **NVIDIA NIM Integration & Resilience**:
+   - Compatible with OpenAI API format via `https://integrate.api.nvidia.com/v1`.
+   - Client-side token bucket rate limiter (35 RPM with smooth queueing and ETA countdowns).
+   - Automatic fallback chain across models on HTTP 403, 404, 5xx, or 45s silence timeouts.
+   - Ephemeral service worker keep-alive pings every 20s during complex reasoning pauses.
 
 ---
 
-## Installation & Build Instructions
+## 🚀 Installation & Setup
 
 ### Prerequisites
-- Node.js (v18+)
-- npm
+- Node.js 20+ and npm
 
-### Development
-To run the local Vite development server:
+### 1. Build from Source
 ```bash
-npm run dev
-```
+# Clone the repository
+git clone https://github.com/callme-ADHI/eX1.git eX-AI
+cd eX-AI
 
-### Production Build
-To compile the TypeScript source files and bundle the extension for production deployment:
-```bash
+# Install dependencies
+npm ci
+
+# Build extension bundles
 npm run build
-```
-This generates the ready-to-load bundle in the `dist/` directory.
 
-### Loading into Chrome
-1. Open Google Chrome.
-2. Navigate to `chrome://extensions/`.
-3. Enable **Developer mode** (top-right toggle).
-4. Click **Load unpacked** (top-left button).
-5. Select the `dist/` directory generated in the root of this project.
+# Run unit test suite
+npm run test
+```
+
+### 2. Load Extension in Google Chrome
+1. Open Chrome and navigate to `chrome://extensions`.
+2. Enable **Developer mode** toggle in the top-right corner.
+3. Click **Load unpacked** in the top-left.
+4. Select the `dist/` directory inside this repository.
+
+### 3. Get a Free NVIDIA API Key
+1. Visit [build.nvidia.com/settings/api-keys](https://build.nvidia.com/settings/api-keys) and sign in.
+2. Generate a personal API key (starts with `nvapi-`).
+3. Open the eX-AI panel (click the handle on the right edge or press `Ctrl+Space`), click **⚙️ Settings**, paste your key, and click **Save & Verify**.
+4. *(Note: NVIDIA free-tier developer accounts provide ~40 requests/minute shared across models for prototyping).*
 
 ---
 
-## Branding & Copyright
+## ⌨️ Keyboard Shortcuts
 
-Copyright © Aevoarx. All rights reserved.
+| Shortcut | Action | Context |
+|---|---|---|
+| `Ctrl+Space` | Toggle eX-AI Side Panel | Anywhere on web pages |
+| `Alt+Shift+S` (Mac: `MacCtrl+Shift+S`) | Trigger Screen Snip OCR | Anywhere on web pages |
+| `Esc` | Close panel / Cancel snip | While panel or snip overlay is open |
+| `T` / `C` | Switch between Text & Code OCR modes | While snip selection is active |
+| `Enter` | Send message in chat composer | Composer focused |
+| `Shift+Enter` | Insert new line in composer | Composer focused |
 
-**Aevoarx** is a registered brand. The eX1 Suite contains proprietary designs, heuristic engines, and visual interfaces. Copying, modification, or distribution is governed by the company's code compliance guidelines.
+---
+
+## 🔒 Privacy & Security Statement
+
+- **Zero Telemetry**: eX-AI does not track browsing, send analytics, or transmit user identifiers.
+- **Offline OCR**: All image processing, pixel cropping, and Tesseract.js character recognition execute 100% locally in your browser inside an isolated extension offscreen document. **Snipped screenshot pixels are NEVER sent to NVIDIA or any third-party server.**
+- **Safe API Storage**: Your NVIDIA API key is stored strictly in Chrome local extension storage (`chrome.storage.local`) and is only ever accessed from the background service worker. The key is never exposed to content scripts or host web pages.
+- **Security Scanner Gated**: Background geo-IP/RDAP domain lookups from the legacy security scanner are disabled by default (`securityEngineEnabled: false`) to ensure visited URLs are never transmitted to external IP lookup APIs unless explicitly enabled by the user.
+
+---
+
+## ⚠️ Known Limits
+
+- **Complex Mathematical Notation**: Tesseract OCR is optimized for typography. Deeply nested fractions, multi-line integrals, and radical surds may be recognized as approximate ASCII. The attachment chip provides a thumbnail preview so you can verify and adjust equations before sending.
+- **Handwritten Content**: The offline OCR model is trained on printed Latin characters; handwritten text will produce lower confidence.
+- **Visible Viewport Only**: In accordance with Chrome Manifest V3 security, screen capture operates on the active visible viewport (scrolling capture is not supported).
+- **Chrome Internal Pages**: Content scripts cannot inject into `chrome://`, `chrome-extension://`, or the Chrome Web Store.
+
+---
+
+## ⚖️ Responsible Use
+
+eX-AI is designed as an interactive study and preparation instrument for campus placement exams, competitive programming practice, and technical interview simulations. Please adhere to institutional academic integrity standards and assessment guidelines during formal examinations and tests.

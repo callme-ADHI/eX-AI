@@ -16,7 +16,7 @@ interface MessageBubbleProps {
   onRetry?: () => void;
 }
 
-export default function MessageBubble({
+const MessageBubble = React.memo(function MessageBubble({
   message,
   isLastAssistant,
   isLastUser,
@@ -199,4 +199,6 @@ export default function MessageBubble({
       )}
     </div>
   );
-}
+});
+
+export default MessageBubble;
