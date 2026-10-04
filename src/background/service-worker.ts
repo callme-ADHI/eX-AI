@@ -25,6 +25,7 @@ import { extractOrigin } from '../shared/utils';
 import { initAIClient } from './ai/nvidiaClient';
 import { handleSettingsGet, handleSettingsSet, handleKeySet, handleKeyClear } from './ai/settings';
 import { handleModelsList } from './ai/models';
+import { captureVisibleTab, handleOcrWarm, handleOcrRun } from './snip/capture';
 
 // ─── Service Worker Entry Point ───────────────────────────────────────────────
 
@@ -172,6 +173,15 @@ async function handleMessage(msg: Message, sender: chrome.runtime.MessageSender)
     case 'AI_MODELS_LIST':
       return handleModelsList(msg.refresh);
 
+    case 'SNIP_CAPTURE':
+      return captureVisibleTab(sender.tab?.windowId);
+
+    case 'OCR_WARM':
+      return handleOcrWarm();
+
+    case 'OCR_RUN':
+      return handleOcrRun(msg.dataUrl, msg.mode, msg.psmHint);
+
     default:
       throw new Error(`Unknown message type: ${(msg as Message).type}`);
   }
@@ -183,6 +193,15 @@ chrome.commands.onCommand.addListener(async (command) => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
       chrome.tabs.sendMessage(tab.id, { type: 'TOGGLE_HUD' }).catch(() => {
+        // Ignore error if content script is not loaded
+      });
+    }
+  }
+
+  if (command === 'start-snip') {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id) {
+      chrome.tabs.sendMessage(tab.id, { type: 'START_SNIP' }).catch(() => {
         // Ignore error if content script is not loaded
       });
     }

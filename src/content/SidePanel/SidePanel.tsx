@@ -1,11 +1,14 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { FocusSession } from '../../shared/types';
+import type { OCRMode } from '../../shared/aiTypes';
 import { KEYS } from '../../shared/storage';
 import FocusGlance from './FocusGlance';
 import EdgeTrigger from './EdgeTrigger';
 import Tabs from './Tabs';
 import ChatPanel from './chat/ChatPanel';
+import SnipOverlay, { SnipResult } from './SnipOverlay';
+import type { AttachmentChipData } from './chat/Composer';
 
 interface Props {
   container: HTMLDivElement;
@@ -85,6 +88,13 @@ export default function SidePanel({
   const [panelWidth, setPanelWidth] = useState(defaultWidth);
   const [edgeTriggerMode, setEdgeTriggerMode] = useState<'strip' | 'handle' | 'off'>('strip');
 
+  // Snip & OCR states
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
+  const [isPanelHiddenForSnip, setIsPanelHiddenForSnip] = useState(false);
+  const [ocrAttachment, setOcrAttachment] = useState<AttachmentChipData | null>(null);
+  const [composerInput, setComposerInput] = useState('');
+  const lastCroppedDataUrlRef = useRef<string | null>(null);
+
   const openRef = useRef(false);
   const panelWidthRef = useRef(panelWidth);
   const previousFocusRef = useRef<Element | null>(null);
@@ -92,7 +102,6 @@ export default function SidePanel({
   const resizeStartXRef = useRef(0);
   const resizeStartWidthRef = useRef(0);
 
-  // Keep ref in sync
   useEffect(() => { openRef.current = open; }, [open]);
   useEffect(() => { panelWidthRef.current = panelWidth; }, [panelWidth]);
 
@@ -135,7 +144,6 @@ export default function SidePanel({
 
   // ── Open panel ────────────────────────────────────────────────────────────
   const openPanel = useCallback(() => {
-    // Remember where focus was before opening
     previousFocusRef.current = document.activeElement;
     setOpen(true);
   }, []);
@@ -143,12 +151,147 @@ export default function SidePanel({
   // ── Close panel ──────────────────────────────────────────────────────────
   const closePanel = useCallback(() => {
     setOpen(false);
-    // Restore focus after animation
     setTimeout(() => {
       if (previousFocusRef.current && (previousFocusRef.current as HTMLElement).focus) {
         (previousFocusRef.current as HTMLElement).focus();
       }
     }, 320);
+  }, []);
+
+  // ── Snip trigger pipeline ─────────────────────────────────────────────────
+  const triggerSnip = useCallback(async () => {
+    // 1. Hide panel visibility
+    setIsPanelHiddenForSnip(true);
+
+    // 2. Wait 2x requestAnimationFrame + 80ms for panel to disappear cleanly
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTimeout(resolve, 80);
+        });
+      });
+    });
+
+    // 3. Capture visible tab
+    chrome.runtime.sendMessage({ type: 'SNIP_CAPTURE' }, (res) => {
+      if (!res || !res.ok || !res.dataUrl) {
+        setIsPanelHiddenForSnip(false);
+        alert(res?.reason || "Can't capture this page.");
+        return;
+      }
+      setScreenshotUrl(res.dataUrl);
+    });
+  }, []);
+
+  // ── Snip completion: run OCR ──────────────────────────────────────────────
+  const handleSnipComplete = useCallback((snip: SnipResult) => {
+    setScreenshotUrl(null);
+    setIsPanelHiddenForSnip(false);
+    setOpen(true);
+    setActiveTab('ai');
+
+    lastCroppedDataUrlRef.current = snip.dataUrl;
+
+    // Set chip to loading state
+    setOcrAttachment({
+      thumbnail: snip.thumbnail,
+      mode: snip.mode as any,
+      loading: true,
+    });
+
+    // Send OCR_RUN to SW -> Offscreen worker
+    chrome.runtime.sendMessage(
+      {
+        type: 'OCR_RUN',
+        dataUrl: snip.dataUrl,
+        mode: snip.mode,
+        psmHint: snip.psmHint,
+      },
+      (res) => {
+        if (!res || !res.ok || !res.data) {
+          setOcrAttachment({
+            thumbnail: snip.thumbnail,
+            mode: snip.mode as any,
+            loading: false,
+            empty: true,
+          });
+          return;
+        }
+
+        const ocrData = res.data;
+        const text = (ocrData.text || '').trim();
+
+        if (!text) {
+          setOcrAttachment({
+            thumbnail: snip.thumbnail,
+            mode: snip.mode as any,
+            loading: false,
+            empty: true,
+          });
+          return;
+        }
+
+        // Success: update chip and append text to composer
+        setOcrAttachment({
+          thumbnail: snip.thumbnail,
+          confidence: ocrData.confidence,
+          mode: snip.mode as any,
+          loading: false,
+        });
+
+        setComposerInput((prev) => {
+          const trimmed = prev.trim();
+          if (!trimmed) return text;
+          return `${trimmed}\n\n${text}`;
+        });
+      }
+    );
+  }, []);
+
+  // ── Snip cancellation ─────────────────────────────────────────────────────
+  const handleSnipCancel = useCallback(() => {
+    setScreenshotUrl(null);
+    setIsPanelHiddenForSnip(false);
+  }, []);
+
+  // ── Re-run OCR in another mode ────────────────────────────────────────────
+  const handleRerunOcr = useCallback((newMode: OCRMode) => {
+    if (!lastCroppedDataUrlRef.current) return;
+
+    setOcrAttachment((prev) => (prev ? { ...prev, loading: true, mode: newMode as any } : null));
+
+    chrome.runtime.sendMessage(
+      {
+        type: 'OCR_RUN',
+        dataUrl: lastCroppedDataUrlRef.current,
+        mode: newMode,
+      },
+      (res) => {
+        if (!res || !res.ok || !res.data) {
+          setOcrAttachment((prev) => (prev ? { ...prev, loading: false } : null));
+          return;
+        }
+
+        const ocrData = res.data;
+        const text = (ocrData.text || '').trim();
+
+        setOcrAttachment((prev) =>
+          prev
+            ? {
+                ...prev,
+                confidence: ocrData.confidence,
+                mode: newMode as any,
+                loading: false,
+                empty: !text,
+              }
+            : null
+        );
+
+        if (text) {
+          setComposerInput(text);
+        }
+      }
+    );
   }, []);
 
   // ── Keyboard shortcut & messages ──────────────────────────────────────────
@@ -159,13 +302,14 @@ export default function SidePanel({
         else openPanel();
       }
       if (msg.type === 'START_SNIP') {
-        // Phase 5: forward snip trigger
-        openPanel();
+        triggerSnip();
       }
     };
 
     const onKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+Space toggles panel (skip when IME is composing)
+      // If SnipOverlay is open, let it handle Esc
+      if (screenshotUrl) return;
+
       if (e.ctrlKey && !e.isComposing && (e.key === ' ' || e.code === 'Space')) {
         e.preventDefault();
         e.stopImmediatePropagation();
@@ -173,7 +317,6 @@ export default function SidePanel({
         else openPanel();
         return;
       }
-      // Esc closes panel
       if (e.key === 'Escape' && openRef.current) {
         e.preventDefault();
         closePanel();
@@ -187,11 +330,9 @@ export default function SidePanel({
       chrome.runtime?.onMessage?.removeListener(handleMsg);
       window.removeEventListener('keydown', onKeyDown, { capture: true });
     };
-  }, [openPanel, closePanel]);
+  }, [openPanel, closePanel, triggerSnip, screenshotUrl]);
 
   // ── Keyboard isolation ────────────────────────────────────────────────────
-  // Prevent keystrokes in the panel from triggering site shortcuts
-  // (YouTube, Gmail, GitHub, etc.)
   useEffect(() => {
     const stopIfInPanel = (e: KeyboardEvent) => {
       const path = e.composedPath();
@@ -200,7 +341,6 @@ export default function SidePanel({
       }
     };
 
-    // Capture phase: we see it first before page handlers
     window.addEventListener('keydown',  stopIfInPanel, { capture: true });
     window.addEventListener('keyup',    stopIfInPanel, { capture: true });
     window.addEventListener('keypress', stopIfInPanel, { capture: true });
@@ -232,16 +372,24 @@ export default function SidePanel({
     if (!isResizingRef.current) return;
     isResizingRef.current = false;
     const finalWidth = panelWidthRef.current;
-    // Persist
     chrome.storage.local.set({ [PANEL_WIDTH_KEY]: finalWidth });
   }, []);
 
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'visible' }}>
 
-      {/* EdgeTrigger — only rendered when panel is closed */}
-      {!open && (
+      {/* EdgeTrigger — only rendered when panel is closed and snip is not active */}
+      {!open && !screenshotUrl && (
         <EdgeTrigger mode={edgeTriggerMode} onOpen={openPanel} />
+      )}
+
+      {/* SnipOverlay — rendered when screenshot is captured */}
+      {screenshotUrl && (
+        <SnipOverlay
+          screenshotUrl={screenshotUrl}
+          onComplete={handleSnipComplete}
+          onCancel={handleSnipCancel}
+        />
       )}
 
       <AnimatePresence>
@@ -253,7 +401,6 @@ export default function SidePanel({
             exit={{ x: '100%', opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             onAnimationComplete={() => {
-              // After open animation, focus the chat textarea (Phase 4 will wire this up)
               const textarea = container.querySelector?.('textarea');
               if (textarea) (textarea as HTMLTextAreaElement).focus();
             }}
@@ -263,7 +410,7 @@ export default function SidePanel({
               right: 0,
               width: `${panelWidth}px`,
               height: '100vh',
-              display: 'flex',
+              display: isPanelHiddenForSnip ? 'none' : 'flex',
               flexDirection: 'column',
               background: 'rgba(10, 10, 12, 0.96)',
               backdropFilter: 'blur(24px)',
@@ -276,11 +423,9 @@ export default function SidePanel({
               overscrollBehavior: 'contain',
             }}
             onKeyDown={(e) => {
-              // Also stop at React level for good measure
               e.stopPropagation();
             }}
             onWheel={(e) => {
-              // Prevent page scroll behind panel when panel scroller is at end
               e.stopPropagation();
             }}
           >
@@ -318,7 +463,14 @@ export default function SidePanel({
             <PanelErrorBoundary>
               <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                 {activeTab === 'ai' && (
-                  <ChatPanel />
+                  <ChatPanel
+                    onStartSnip={triggerSnip}
+                    ocrAttachment={ocrAttachment}
+                    onRemoveOcrAttachment={() => setOcrAttachment(null)}
+                    onRerunOcr={handleRerunOcr}
+                    initialInput={composerInput}
+                    onInputChange={setComposerInput}
+                  />
                 )}
 
                 {activeTab === 'focus' && (

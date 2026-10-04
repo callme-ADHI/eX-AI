@@ -13,10 +13,12 @@
     "downloads",
     "notifications",
     "scripting",
-    "contextMenus"
+    "contextMenus",
+    "offscreen"
   ],
   "host_permissions": [
     "<all_urls>",
+    "https://integrate.api.nvidia.com/*",
     "http://ip-api.com/*",
     "https://rdap.org/*"
   ],
@@ -43,7 +45,7 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
   },
   "action": {
     "default_title": "eX1 Dashboard",
@@ -59,6 +61,13 @@
         "mac": "Ctrl+Space"
       },
       "description": "Toggle the eX1 AI Wheel"
+    },
+    "start-snip": {
+      "suggested_key": {
+        "default": "Alt+Shift+S",
+        "mac": "MacCtrl+Shift+S"
+      },
+      "description": "Snip screen to text with offline OCR"
     }
   },
   "declarative_net_request": {

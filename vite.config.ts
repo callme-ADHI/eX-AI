@@ -11,12 +11,14 @@ export default defineConfig({
       input: {
         index:      resolve(__dirname, 'index.html'),
         newtab:     resolve(__dirname, 'newtab.html'),
+        offscreen:  resolve(__dirname, 'offscreen.html'),
         background: resolve(__dirname, 'src/background/service-worker.ts'),
       },
       output: {
         format: 'es',
         entryFileNames: (chunk) => {
           if (chunk.name === 'newtab') return 'newtab.js';
+          if (chunk.name === 'offscreen') return 'offscreen.js';
           return '[name].js';
         },
         chunkFileNames: 'chunks/[name]-[hash].js',
