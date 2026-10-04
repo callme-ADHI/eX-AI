@@ -190,6 +190,9 @@ export default function SidePanel({
         alert(reason);
         return;
       }
+      // Unhide panel host before setting screenshotUrl so applySnipStyles
+      // takes effect on a properly visible host element
+      setIsPanelHiddenForSnip(false);
       setScreenshotUrl(payload.dataUrl);
     });
   }, []);
@@ -336,6 +339,11 @@ export default function SidePanel({
     const onKeyDown = (e: KeyboardEvent) => {
       if (screenshotUrl) return;
 
+      // Ignore keystrokes that originated inside the shadow root / panel
+      // (the event path crosses the shadow host container)
+      const path = e.composedPath();
+      if (path.includes(container)) return;
+
       // Ctrl + Space always toggles or opens panel
       if (e.ctrlKey && (e.key === ' ' || e.code === 'Space')) {
         e.preventDefault();
@@ -357,7 +365,7 @@ export default function SidePanel({
       chrome.runtime?.onMessage?.removeListener(handleMsg);
       window.removeEventListener('keydown', onKeyDown, { capture: true });
     };
-  }, [openPanel, closePanel, triggerSnip, screenshotUrl]);
+  }, [openPanel, closePanel, triggerSnip, screenshotUrl, container]);
 
   // ── Keyboard isolation ────────────────────────────────────────────────────
   // Stop keystrokes inside panel from bubbling up to document and window

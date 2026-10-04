@@ -157,6 +157,15 @@
 }
 
 /* ─── Message List ─────────────────────────────────────────────────────────── */
+.messageListWrapper {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .messageList {
   flex: 1;
   overflow-y: auto;
@@ -166,6 +175,7 @@
   flex-direction: column;
   gap: 16px;
   scroll-behavior: smooth;
+  min-height: 0;
 }
 
 .emptyState {
@@ -173,7 +183,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  flex: 1;
   text-align: center;
   gap: 12px;
   color: rgba(232, 232, 240, 0.5);
@@ -537,7 +547,7 @@
 /* ─── Jump to Latest Button ────────────────────────────────────────────────── */
 .jumpLatestBtn {
   position: absolute;
-  bottom: 80px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
   background: rgba(30, 41, 59, 0.9);
@@ -551,6 +561,7 @@
   backdrop-filter: blur(8px);
   z-index: 5;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .jumpLatestBtn:hover {

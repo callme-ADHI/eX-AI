@@ -63,26 +63,30 @@ export default function MessageList({
   if (messages.length === 0) {
     if (!hasKey) {
       return (
-        <div className={styles.emptyState}>
-          <div className={styles.emptyIcon}>🔑</div>
-          <div className={styles.emptyTitle}>Welcome to eX-AI by ADHI</div>
-          <div className={styles.emptyText}>
-            To start practising aptitude, coding, and reasoning questions, please provide your free NVIDIA API key.
+        <div className={styles.messageListWrapper}>
+          <div className={styles.emptyState}>
+            <div className={styles.emptyIcon}>🔑</div>
+            <div className={styles.emptyTitle}>Welcome to eX-AI by ADHI</div>
+            <div className={styles.emptyText}>
+              To start practising aptitude, coding, and reasoning questions, please provide your free NVIDIA API key.
+            </div>
+            <button className={styles.setupBtn} onClick={onOpenSettings}>
+              Open Settings to add Key
+            </button>
           </div>
-          <button className={styles.setupBtn} onClick={onOpenSettings}>
-            Open Settings to add Key
-          </button>
         </div>
       );
     }
 
     return (
-      <div className={styles.emptyState}>
-        <div className={styles.emptyIcon}>⚡</div>
-        <div className={styles.emptyTitle}>eX-AI Practice Assistant</div>
-        <div style={{ fontSize: '11px', color: '#7094ff', fontWeight: 600, marginTop: '-6px' }}>Built by ADHI</div>
-        <div className={styles.emptyText}>
-          Ask any aptitude problem, coding question, or puzzle. Or click <strong>Snip</strong> to OCR questions directly from the screen!
+      <div className={styles.messageListWrapper}>
+        <div className={styles.emptyState}>
+          <div className={styles.emptyIcon}>⚡</div>
+          <div className={styles.emptyTitle}>eX-AI Practice Assistant</div>
+          <div style={{ fontSize: '11px', color: '#7094ff', fontWeight: 600, marginTop: '-6px' }}>Built by ADHI</div>
+          <div className={styles.emptyText}>
+            Ask any aptitude problem, coding question, or puzzle. Or click <strong>Snip</strong> to OCR questions directly from the screen!
+          </div>
         </div>
       </div>
     );
@@ -102,33 +106,35 @@ export default function MessageList({
   }
 
   return (
-    <div
-      ref={containerRef}
-      className={styles.messageList}
-      onScroll={handleScroll}
-      aria-live="polite"
-    >
-      {queuedEtaMs && queuedEtaMs > 0 && (
-        <div className={styles.queuedNotice}>
-          <span>⏳</span>
-          <span>Waiting for rate limit (≈{Math.round(queuedEtaMs / 1000)}s)...</span>
-        </div>
-      )}
+    <div className={styles.messageListWrapper}>
+      <div
+        ref={containerRef}
+        className={styles.messageList}
+        onScroll={handleScroll}
+        aria-live="polite"
+      >
+        {queuedEtaMs && queuedEtaMs > 0 && (
+          <div className={styles.queuedNotice}>
+            <span>⏳</span>
+            <span>Waiting for rate limit (≈{Math.round(queuedEtaMs / 1000)}s)...</span>
+          </div>
+        )}
 
-      {messages.map((msg, idx) => (
-        <MessageBubble
-          key={msg.id}
-          message={msg}
-          isLastAssistant={idx === lastAssistantIdx}
-          isLastUser={idx === lastUserIdx}
-          isStreaming={msg.id === streamingMessageId && isStreaming}
-          error={idx === lastAssistantIdx ? error : null}
-          onCopy={onCopy}
-          onRegenerate={onRegenerate}
-          onEdit={onEdit}
-          onRetry={onRetry}
-        />
-      ))}
+        {messages.map((msg, idx) => (
+          <MessageBubble
+            key={msg.id}
+            message={msg}
+            isLastAssistant={idx === lastAssistantIdx}
+            isLastUser={idx === lastUserIdx}
+            isStreaming={msg.id === streamingMessageId && isStreaming}
+            error={idx === lastAssistantIdx ? error : null}
+            onCopy={onCopy}
+            onRegenerate={onRegenerate}
+            onEdit={onEdit}
+            onRetry={onRetry}
+          />
+        ))}
+      </div>
 
       {showJumpToBottom && (
         <button
