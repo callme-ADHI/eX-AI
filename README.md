@@ -1,4 +1,4 @@
-# eX1 by Aevoarx
+# eX-AI by Aevoarx
 
 > **eX1** is an instrument-grade browser companion that seamlessly integrates cybersecurity intelligence, focus/productivity metrics, and smart web utilities into a unified, high-performance browser extension.
 

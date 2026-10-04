@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "eX1",
+  "name": "eX-AI",
   "version": "2.0.0",
   "description": "Instrument-grade AI browser companion — dashboard, focus engine, security scanner, and productivity intelligence.",
   "permissions": [
