@@ -27,6 +27,7 @@ import { handleSettingsGet, handleSettingsSet, handleKeySet, handleKeyClear } fr
 import { handleModelsList } from './ai/models';
 import { captureVisibleTab, handleOcrWarm, handleOcrRun } from './snip/capture';
 import { registerEditorFill } from './autofill/editorFill';
+import { registerJsonRequest } from './ai/jsonRequest';
 import { loadSettings } from './ai/settings';
 
 // ─── Service Worker Entry Point ───────────────────────────────────────────────
@@ -73,13 +74,16 @@ registerEditorFill(async () => {
   return s.autofillAllow ?? [];
 });
 
+// Register Autofill JSON proposals request handler
+registerJsonRequest();
+
 // ─── Message router ───────────────────────────────────────────────────────────
 // IMPORTANT: handlers that respond asynchronously must return true.
 
 chrome.runtime.onMessage.addListener(
   (message: Message, sender, sendResponse: (r: MessageResponse) => void) => {
-    if ((message as any)?.type?.startsWith?.('AUTOFILL_')) {
-      return; // Handled by dedicated autofill listeners
+    if ((message as any)?.type?.startsWith?.('AUTOFILL_') || (message as any)?.type === 'AI_JSON_REQUEST') {
+      return; // Handled by dedicated autofill/AI listeners
     }
     handleMessage(message, sender)
       .then((data) => sendResponse({ ok: true, data }))

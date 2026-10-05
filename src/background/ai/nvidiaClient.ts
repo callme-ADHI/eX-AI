@@ -41,6 +41,8 @@ export interface StreamOnceOptions {
   apiKey: string;
   tools?: boolean;
   abortSignal: AbortSignal;
+  maxTokens?: number;
+  responseFormat?: { type: string };
   onReasoning?: (text: string) => void;
   onDelta?: (text: string) => void;
   onModel?: (id: string) => void;
@@ -58,7 +60,7 @@ export interface StreamOnceResult {
  * Executes a single streaming generation request to the NVIDIA NIM endpoint.
  */
 export async function streamOnce(options: StreamOnceOptions): Promise<StreamOnceResult> {
-  const { model, apiMessages, think, apiKey, tools, abortSignal, onReasoning, onDelta, onModel } = options;
+  const { model, apiMessages, think, apiKey, tools, abortSignal, maxTokens, responseFormat, onReasoning, onDelta, onModel } = options;
 
   if (onModel) onModel(model);
 
@@ -66,11 +68,15 @@ export async function streamOnce(options: StreamOnceOptions): Promise<StreamOnce
     model,
     messages: apiMessages,
     stream: true,
-    max_tokens: 4096,
+    max_tokens: Math.min(maxTokens ?? 4096, 8192),
     temperature: think ? 0.6 : 0.7,
     top_p: 0.95,
     chat_template_kwargs: { enable_thinking: think },
   };
+
+  if (responseFormat) {
+    bodyPayload.response_format = responseFormat;
+  }
 
   if (tools) {
     bodyPayload.tools = TOOL_DEFS;
