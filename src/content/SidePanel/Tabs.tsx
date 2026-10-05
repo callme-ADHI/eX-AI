@@ -1,6 +1,6 @@
 import React from 'react';
 
-type TabId = 'ai' | 'focus';
+export type TabId = 'ai' | 'focus' | 'autofill';
 
 interface TabsProps {
   activeTab: TabId;
@@ -9,12 +9,12 @@ interface TabsProps {
 }
 
 /**
- * Panel tab bar: AI | Focus, with a close button.
+ * Panel tab bar: AI | Focus | Autofill, with a close button.
  */
 export default function Tabs({ activeTab, onTabChange, onClose }: TabsProps) {
   const tabStyle = (id: TabId): React.CSSProperties => ({
     flex: 1,
-    padding: '8px 12px',
+    padding: '8px 10px',
     background: activeTab === id ? 'rgba(36,82,255,0.18)' : 'transparent',
     border: 'none',
     borderBottom: activeTab === id ? '2px solid rgba(36,82,255,0.9)' : '2px solid transparent',
@@ -41,6 +41,9 @@ export default function Tabs({ activeTab, onTabChange, onClose }: TabsProps) {
       </button>
       <button style={tabStyle('focus')} onClick={() => onTabChange('focus')}>
         Focus
+      </button>
+      <button style={tabStyle('autofill')} onClick={() => onTabChange('autofill')}>
+        Autofill
       </button>
       {/* Spacer */}
       <div style={{ flex: 0, width: '1px', background: 'rgba(255,255,255,0.07)', margin: '6px 0' }} />

@@ -383,6 +383,68 @@ export default function SettingsDrawer({
           </div>
         </div>
 
+        {/* Autofill for Test Sites */}
+        <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '16px', marginTop: '16px' }}>
+          <div className={styles.sectionTitle} style={{ color: '#00ffd2' }}>
+            🧪 Autofill for Test Sites
+          </div>
+          <div className={styles.fieldNote} style={{ marginBottom: '10px' }}>
+            Developer tool for authorized QA test harnesses. Fills fields safely and never submits.
+          </div>
+
+          <div className={styles.fieldGroup}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={settings.autofillEnabled}
+                onChange={(e) => onUpdateSettings({ autofillEnabled: e.target.checked })}
+              />
+              <span style={{ fontSize: '12px', fontWeight: 600 }}>Enable Autofill</span>
+            </label>
+          </div>
+
+          {settings.autofillEnabled && (
+            <>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>
+                  Fill delay: {settings.autofillDelayMs ?? 80} ms
+                </label>
+                <input
+                  type="range"
+                  min={40}
+                  max={500}
+                  step={10}
+                  value={settings.autofillDelayMs ?? 80}
+                  onChange={(e) => onUpdateSettings({ autofillDelayMs: Number(e.target.value) })}
+                  style={{ width: '100%', accentColor: '#2452ff' }}
+                />
+              </div>
+
+              <div className={styles.fieldGroup}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={settings.autofillOverwrite ?? false}
+                    onChange={(e) => onUpdateSettings({ autofillOverwrite: e.target.checked })}
+                  />
+                  <span style={{ fontSize: '12px' }}>Overwrite already answered fields</span>
+                </label>
+              </div>
+
+              <div className={styles.fieldGroup}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={settings.autofillThink ?? true}
+                    onChange={(e) => onUpdateSettings({ autofillThink: e.target.checked })}
+                  />
+                  <span style={{ fontSize: '12px' }}>Enable model thinking (reasoning)</span>
+                </label>
+              </div>
+            </>
+          )}
+        </div>
+
         {/* Usage note */}
         <div
           style={{

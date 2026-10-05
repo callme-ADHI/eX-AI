@@ -5,8 +5,9 @@ import type { OCRMode } from '../../shared/aiTypes';
 import { KEYS } from '../../shared/storage';
 import FocusGlance from './FocusGlance';
 import EdgeTrigger from './EdgeTrigger';
-import Tabs from './Tabs';
+import Tabs, { type TabId } from './Tabs';
 import ChatPanel from './chat/ChatPanel';
+import AutofillTab from './autofill/AutofillTab';
 import SnipOverlay, { SnipResult } from './SnipOverlay';
 import type { AttachmentChipData } from './chat/Composer';
 
@@ -18,8 +19,6 @@ interface Props {
   applyClosedStyles: (el: HTMLElement) => void;
   applySnipStyles?: (el: HTMLElement) => void;
 }
-
-type TabId = 'ai' | 'focus';
 
 /** Clamp panel width between min/max */
 const MIN_WIDTH = 340;
@@ -518,6 +517,10 @@ export default function SidePanel({
                   }}>
                     <FocusGlance session={currentSession} />
                   </div>
+                )}
+
+                {activeTab === 'autofill' && (
+                  <AutofillTab ownHost={container} />
                 )}
               </div>
             </PanelErrorBoundary>

@@ -1,0 +1,444 @@
+/* ─── Autofill Styles ────────────────────────────────────────────────────────── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  color: #e8e8f0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  background: transparent;
+}
+
+/* Banner / Warning States */
+.stateBanner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  text-align: center;
+  gap: 16px;
+  margin: auto 0;
+}
+
+.stateIcon {
+  font-size: 32px;
+}
+
+.stateTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.stateDesc {
+  font-size: 12px;
+  color: rgba(232, 232, 240, 0.65);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 320px;
+}
+
+.securityNote {
+  font-size: 11px;
+  color: #00ffd2;
+  background: rgba(0, 255, 210, 0.08);
+  border: 1px solid rgba(0, 255, 210, 0.2);
+  border-radius: 6px;
+  padding: 8px 12px;
+  line-height: 1.4;
+  margin-top: 8px;
+}
+
+/* Primary and Secondary Buttons */
+.primaryBtn {
+  background: #2452ff;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.primaryBtn:hover:not(:disabled) {
+  background: #3b66ff;
+  box-shadow: 0 0 12px rgba(36, 82, 255, 0.4);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryBtn {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.secondaryBtn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.secondaryBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dangerBtn {
+  background: rgba(255, 59, 48, 0.15);
+  color: #ff453a;
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dangerBtn:hover {
+  background: rgba(255, 59, 48, 0.25);
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  flex-shrink: 0;
+}
+
+.toolbarRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.toolbarStats {
+  font-size: 11px;
+  color: rgba(232, 232, 240, 0.5);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Field List */
+.fieldList {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Proposal Row */
+.row {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.row:hover {
+  border-color: rgba(36, 82, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rowHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.rowCheckbox {
+  margin-top: 3px;
+  accent-color: #2452ff;
+  cursor: pointer;
+}
+
+.rowQuestionArea {
+  flex: 1;
+  min-width: 0;
+}
+
+.rowQuestion {
+  font-size: 13px;
+  font-weight: 500;
+  color: #f0f0f8;
+  line-height: 1.4;
+  margin: 0;
+  word-break: break-word;
+}
+
+.expandBtn {
+  background: transparent;
+  border: none;
+  color: #2452ff;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 4px;
+  display: inline-block;
+}
+
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badgeNative {
+  background: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+  border: 1px solid rgba(52, 199, 89, 0.3);
+}
+
+.badgeAria {
+  background: rgba(0, 199, 190, 0.15);
+  color: #00c7be;
+  border: 1px solid rgba(0, 199, 190, 0.3);
+}
+
+.badgeHeuristic {
+  background: rgba(255, 159, 10, 0.15);
+  color: #ff9f0a;
+  border: 1px solid rgba(255, 159, 10, 0.3);
+}
+
+.badgePicked {
+  background: rgba(175, 82, 222, 0.15);
+  color: #af52de;
+  border: 1px solid rgba(175, 82, 222, 0.3);
+}
+
+.badgeConfidence {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(232, 232, 240, 0.7);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.badgeFilled {
+  background: rgba(255, 69, 58, 0.15);
+  color: #ff453a;
+  border: 1px solid rgba(255, 69, 58, 0.3);
+}
+
+/* Option pills */
+.pills {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.pill {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.02);
+  color: rgba(232, 232, 240, 0.85);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.12s ease;
+  word-break: break-word;
+}
+
+.pill:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.pillSelected {
+  background: rgba(36, 82, 255, 0.25);
+  border-color: #2452ff;
+  color: #ffffff;
+  font-weight: 500;
+  box-shadow: 0 0 8px rgba(36, 82, 255, 0.2);
+}
+
+/* Inputs & Textareas */
+.inputField {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  padding: 8px 10px;
+  color: #f0f0f8;
+  font-size: 12px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.inputField:focus {
+  outline: none;
+  border-color: #2452ff;
+  box-shadow: 0 0 8px rgba(36, 82, 255, 0.3);
+}
+
+.codeInput {
+  font-family: 'IBM Plex Mono', 'Menlo', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  min-height: 80px;
+}
+
+/* Modal Dialog Backdrop */
+.modalBackdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modalContent {
+  background: #0f1018;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  width: 100%;
+  max-width: 440px;
+  max-height: 90%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+}
+
+.modalHeader {
+  padding: 14px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0;
+}
+
+.modalBody {
+  padding: 16px 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 12px;
+  color: rgba(232, 232, 240, 0.8);
+}
+
+.modalFooter {
+  padding: 12px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* Highlight layer */
+.highlightBox {
+  position: fixed;
+  border: 2px solid #2452ff;
+  background: rgba(36, 82, 255, 0.15);
+  pointer-events: none;
+  border-radius: 4px;
+  z-index: 2147483640;
+  transition: all 0.1s ease-out;
+}
+
+.highlightFilled {
+  border-color: #34c759;
+  background: rgba(52, 199, 89, 0.15);
+}
+
+.highlightSkipped {
+  border-color: #8e8e93;
+  background: rgba(142, 142, 147, 0.12);
+}
+
+.highlightFailed {
+  border-color: #ff453a;
+  background: rgba(255, 69, 58, 0.15);
+}
+
+/* Element Picker Overlay */
+.pickerOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 2147483645;
+  cursor: crosshair;
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.pickerBanner {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #151824;
+  border: 1px solid #2452ff;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 500;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 2147483646;
+}
