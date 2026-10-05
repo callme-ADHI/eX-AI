@@ -1,104 +1,135 @@
 import { LIMITS } from '../../shared/constants';
-import { isSameOrigin, isBlockedUrl } from './urls';
 import { extractFromDocument } from './extract';
-import { collectLinks, buildLinksBlock } from './links';
-import { buildStructure } from './structure';
-import type { ExtractResult } from './types';
+import { buildLinksBlock, collectLinks } from './links';
+import { getRegistry, isBlockedUrl, isSameOrigin, urlKey } from './urls';
+import type { ExtractResult, LinkInfo } from './types';
 
-let lastFetchTime = 0;
-
-export async function fetchText(
-  url: string,
-  origin: string
-): Promise<{ ok: boolean; text?: string; finalUrl?: string; error?: string }> {
-  if (!isSameOrigin(url, origin)) return { ok: false, error: 'cross-origin fetch is not allowed' };
-  const check = isBlockedUrl(url);
-  if (check.blocked) return { ok: false, error: `URL blocked: ${check.reason}` };
-
+const sleep = (ms: number) => new Promise<void>(r => setTimeout(r, ms));
+let nextSlot = 0;
+async function politeWait(): Promise<void> {
   const now = Date.now();
-  const wait = Math.max(0, LIMITS.minGapMs - (now - lastFetchTime));
-  if (wait > 0) await new Promise((r) => setTimeout(r, wait));
-  lastFetchTime = Date.now();
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), LIMITS.fetchTimeoutMs);
-
-  try {
-    const res = await fetch(url, {
-      method: 'GET',
-      credentials: 'include',
-      signal: controller.signal,
-      headers: { Accept: 'text/html,application/xhtml+xml,text/plain;q=0.9' },
-    });
-    clearTimeout(timer);
-
-    if (!isSameOrigin(res.url, origin)) return { ok: false, error: 'redirected to a different origin' };
-    const checkRedirect = isBlockedUrl(res.url);
-    if (checkRedirect.blocked) return { ok: false, error: `redirected to blocked URL: ${checkRedirect.reason}` };
-
-    const ct = res.headers.get('content-type') || '';
-    if (!/(text\/html|application\/xhtml\+xml|text\/plain)/i.test(ct)) {
-      return { ok: false, error: `unsupported content-type: ${ct}` };
-    }
-
-    if (!res.body) return { ok: false, error: 'empty response body' };
-
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let totalBytes = 0;
-    let text = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      totalBytes += value.byteLength;
-      if (totalBytes > LIMITS.fetchMaxBytes) {
-        controller.abort();
-        return { ok: false, error: `response exceeded size cap (${LIMITS.fetchMaxBytes} bytes)` };
-      }
-      text += decoder.decode(value, { stream: true });
-    }
-    text += decoder.decode();
-
-    return { ok: true, text, finalUrl: res.url };
-  } catch (e: any) {
-    clearTimeout(timer);
-    return { ok: false, error: e.name === 'AbortError' ? 'request timed out' : e.message || 'fetch failed' };
-  }
+  const at = Math.max(now, nextSlot);
+  nextSlot = at + LIMITS.minGapMs;
+  if (at > now) await sleep(at - now);
 }
 
+export interface Fetched { finalUrl: string; status: number; contentType: string; body: string }
+
+/** Same-origin GET with timeout, size cap, content-type allowlist and one retry on 429/503. */
+export async function fetchText(
+  url: string,
+  signal: AbortSignal,
+  accept: RegExp = /^(text\/html|application\/xhtml\+xml|text\/plain|application\/xml|text\/xml)/i
+): Promise<Fetched> {
+  if (!isSameOrigin(url, location.origin)) throw new Error('cross-origin fetch refused');
+  for (let attempt = 0; attempt < 2; attempt++) {
+    await politeWait();
+    const ctl = new AbortController();
+    const onAbort = () => ctl.abort();
+    signal.addEventListener('abort', onAbort, { once: true });
+    const timer = setTimeout(() => ctl.abort(), LIMITS.fetchTimeoutMs);
+    try {
+      const res = await fetch(url, {
+        method: 'GET',
+        credentials: 'same-origin',
+        redirect: 'follow',
+        cache: 'no-store',
+        signal: ctl.signal,
+      });
+      if ((res.status === 429 || res.status === 503) && attempt === 0) {
+        const ra = Number(res.headers.get('retry-after'));
+        await sleep(Math.min(10_000, Number.isFinite(ra) && ra > 0 ? ra * 1000 : 3000));
+        continue;
+      }
+      const finalUrl = res.url || url;
+      if (!isSameOrigin(finalUrl, location.origin)) throw new Error('redirected to another site');
+      if (isBlockedUrl(finalUrl).blocked && urlKey(finalUrl) !== urlKey(url)) {
+        throw new Error('redirected to a blocked URL');
+      }
+      const contentType = res.headers.get('content-type') ?? '';
+      if (res.ok && !accept.test(contentType)) {
+        throw new Error(`unsupported content type: ${contentType || 'unknown'}`);
+      }
+      const reader = res.body?.getReader();
+      let received = 0;
+      const chunks: Uint8Array[] = [];
+      if (reader) {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          received += value.byteLength;
+          if (received > LIMITS.fetchMaxBytes) {
+            ctl.abort();
+            break;
+          }
+          chunks.push(value);
+        }
+      }
+      const buf = new Uint8Array(chunks.reduce((n, c) => n + c.byteLength, 0));
+      let off = 0;
+      for (const c of chunks) {
+        buf.set(c, off);
+        off += c.byteLength;
+      }
+      const charset = /charset=([\w-]+)/i.exec(contentType)?.[1] ?? 'utf-8';
+      let body: string;
+      try {
+        body = new TextDecoder(charset).decode(buf);
+      } catch {
+        body = new TextDecoder('utf-8').decode(buf);
+      }
+      return { finalUrl, status: res.status, contentType, body };
+    } finally {
+      clearTimeout(timer);
+      signal.removeEventListener('abort', onAbort);
+    }
+  }
+  throw new Error('server is rate limiting requests');
+}
+
+export interface FetchedPage {
+  ok: true;
+  url: string;
+  status: number;
+  page: ExtractResult;
+  links: LinkInfo[];
+  linksText: string;
+}
+export interface FetchFailure {
+  ok: false;
+  reason: string;
+}
+
+/** Fetch an HTML page, parse it with DOMParser (scripts never run), extract text and links. */
 export async function fetchAndExtract(
   url: string,
-  origin: string,
-  maxChars = 20_000
-): Promise<{
-  ok: boolean;
-  page?: ExtractResult;
-  structure?: string;
-  linksText?: string;
-  totalLinks?: number;
-  error?: string;
-}> {
-  const r = await fetchText(url, origin);
-  if (!r.ok || !r.text) return { ok: false, error: r.error };
-
-  const doc = new DOMParser().parseFromString(r.text, 'text/html');
+  signal: AbortSignal,
+  maxChars: number
+): Promise<FetchedPage | FetchFailure> {
+  let f: Fetched;
+  try {
+    f = await fetchText(url, signal);
+  } catch (e: any) {
+    return {
+      ok: false,
+      reason: e?.name === 'AbortError' ? 'timed out or cancelled' : String(e?.message ?? e),
+    };
+  }
+  if (f.status >= 400) return { ok: false, reason: `HTTP ${f.status}` };
+  const doc = new DOMParser().parseFromString(f.body, 'text/html');
+  for (const n of Array.from(doc.querySelectorAll('script, style, noscript, template'))) {
+    n.remove();
+  }
   const page = extractFromDocument(doc, {
     scope: 'main',
     maxChars,
-    keepQuery: false,
+    keepQuery: true,
     live: false,
-    pageUrl: r.finalUrl || url,
+    pageUrl: f.finalUrl,
   });
-  const structure = buildStructure(doc, r.finalUrl || url);
-  const { links, contacts } = collectLinks(doc, r.finalUrl || url, origin);
-  const linksBlock = buildLinksBlock(links, contacts, { limit: 50, maxChars: 4000 });
-
-  return {
-    ok: true,
-    page,
-    structure,
-    linksText: linksBlock.text,
-    totalLinks: links.length,
-  };
+  const { links, contacts } = collectLinks(doc, f.finalUrl, location.origin);
+  getRegistry().add(f.finalUrl);
+  const internal = links.filter((l) => l.scope === 'internal');
+  const lb = buildLinksBlock(internal, contacts, { limit: 60, maxChars: 4000 });
+  return { ok: true, url: f.finalUrl, status: f.status, page, links, linksText: lb.text };
 }

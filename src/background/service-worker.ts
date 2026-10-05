@@ -29,6 +29,10 @@ import { captureVisibleTab, handleOcrWarm, handleOcrRun } from './snip/capture';
 
 // ─── Service Worker Entry Point ───────────────────────────────────────────────
 
+if (chrome.storage?.session?.setAccessLevel) {
+  chrome.storage.session.setAccessLevel({ accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS' }).catch(() => {});
+}
+
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
   if (reason === 'install') {
     // Seed defaults on first install

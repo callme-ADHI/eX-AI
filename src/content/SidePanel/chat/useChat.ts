@@ -27,7 +27,8 @@ import type { Scope, ContextPack, ActivityItem } from '../../pageText/types';
 import { collectContext } from '../../pageText/collectContext';
 import { isOriginAllowed, allowOnce, allowAlways, isIncognito, looksSensitive } from '../../pageText/consent';
 import { refersToPage } from '../../pageText/intent';
-import { executeTool } from '../../pageText/tools';
+import { executeTool, type ToolEnv } from '../../pageText/tools';
+import { urlKey } from '../../pageText/urls';
 
 interface UseChatOptions {
   ownHost?: Element | null;
@@ -83,6 +84,20 @@ export function useChat(options: UseChatOptions = {}) {
   const sessionRef = useRef<ChatSession>(session);
   const isStreamingRef = useRef(false);
   const debouncedSaveRef = useRef(createDebouncedSave(400));
+  const overridesRef = useRef<Set<string>>(new Set());
+  const streamAbortControllerRef = useRef<AbortController | null>(null);
+  const settingsRef = useRef<ExAISettings>(settings);
+
+  useEffect(() => {
+    settingsRef.current = settings;
+  }, [settings]);
+
+  const handleOverrideUrl = useCallback((url: string) => {
+    try {
+      overridesRef.current.add(urlKey(url));
+      alert('Approved. Ask the AI to try again.');
+    } catch {}
+  }, []);
 
   useEffect(() => {
     sessionRef.current = session;
@@ -259,6 +274,7 @@ export function useChat(options: UseChatOptions = {}) {
         return;
       }
 
+      streamAbortControllerRef.current = new AbortController();
       setIsStreaming(true);
       setStreamingMessageId(assistantMsgId);
       setQueuedEtaMs(null);
@@ -348,36 +364,31 @@ export function useChat(options: UseChatOptions = {}) {
             state: 'running',
           };
 
-          if (targetIdx !== -1) {
-            const prevActivity = currentMsgs[targetIdx].activity || [];
-            currentMsgs[targetIdx] = {
-              ...currentMsgs[targetIdx],
-              activity: [...prevActivity, runningActivity],
-            };
-            setSession({ ...sessionRef.current, messages: currentMsgs });
-          }
-
-          executeTool(msg.name, msg.args, ownHost ?? null, async (confirmMsg) => {
-            return window.confirm(confirmMsg);
-          })
-            .then((result) => {
-              const msgsAfter = [...sessionRef.current.messages];
-              const idxAfter = msgsAfter.findIndex((m) => m.id === assistantMsgId);
-              if (idxAfter !== -1) {
-                const actList = (msgsAfter[idxAfter].activity || []).map((a) =>
-                  a.id === activityId
-                    ? {
-                        ...a,
-                        label: result.activityLabel,
-                        state: result.ok ? ('done' as const) : ('blocked' as const),
-                        url: result.url,
-                      }
-                    : a
-                );
-                msgsAfter[idxAfter] = { ...msgsAfter[idxAfter], activity: actList };
-                setSession({ ...sessionRef.current, messages: msgsAfter });
+          const env: ToolEnv = {
+            signal: streamAbortControllerRef.current?.signal ?? new AbortController().signal,
+            settings: { pageContextMaxChars: settingsRef.current.pageContextMaxChars ?? 60000 },
+            overrides: overridesRef.current,
+            confirm: async (confirmMsg: string) => window.confirm(confirmMsg),
+            onActivity: (actItem: ActivityItem) => {
+              const msgs = [...sessionRef.current.messages];
+              const idx = msgs.findIndex((m) => m.id === assistantMsgId);
+              if (idx !== -1) {
+                const prev = msgs[idx].activity || [];
+                const existingIdx = prev.findIndex((a) => a.id === actItem.id);
+                if (existingIdx !== -1) {
+                  prev[existingIdx] = actItem;
+                } else {
+                  prev.push(actItem);
+                }
+                msgs[idx] = { ...msgs[idx], activity: [...prev] };
+                setSession({ ...sessionRef.current, messages: msgs });
               }
+            },
+            ownHost: ownHost ?? null,
+          };
 
+          executeTool(msg.name, msg.args, env)
+            .then((result) => {
               port.postMessage({
                 type: 'TOOL_RESULT',
                 id: msg.id,
@@ -390,7 +401,7 @@ export function useChat(options: UseChatOptions = {}) {
                 type: 'TOOL_RESULT',
                 id: msg.id,
                 ok: false,
-                content: `<tool_result name="${msg.name}" untrusted="true">Execution error: ${err.message || 'unknown'}</tool_result>`,
+                content: `Execution error: ${err.message || 'unknown'}`,
               });
             });
 
@@ -595,6 +606,7 @@ export function useChat(options: UseChatOptions = {}) {
 
   // Abort ongoing stream
   const stopGenerating = useCallback(() => {
+    streamAbortControllerRef.current?.abort();
     if (portRef.current) {
       try {
         portRef.current.postMessage({ type: 'ABORT' });
@@ -805,5 +817,6 @@ export function useChat(options: UseChatOptions = {}) {
     setConsentPrompt,
     jsOnlyNotice,
     setJsOnlyNotice,
+    handleOverrideUrl,
   };
 }

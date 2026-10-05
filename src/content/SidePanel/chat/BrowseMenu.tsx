@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import type { Scope } from '../../pageText/types';
 import type { BrowseMode } from '../../../shared/aiTypes';
 import { isOriginAllowed, forgetAllOrigins } from '../../pageText/consent';
+import IndexSiteButton from './IndexSiteButton';
 import styles from './chat.module.css';
 
 interface BrowseMenuProps {
@@ -181,6 +182,8 @@ export default function BrowseMenu({
               🗺️ Read sitemap
             </button>
 
+            <IndexSiteButton />
+
             {onOpenIndexDrawer && (
               <button
                 className={styles.menuItem}
@@ -193,6 +196,10 @@ export default function BrowseMenu({
                 📚 Site Index & Search
               </button>
             )}
+          </div>
+
+          <div style={{ fontSize: '9px', color: 'rgba(232, 232, 240, 0.4)', marginTop: '4px', fontStyle: 'italic' }}>
+            Tools send fetched page text to NVIDIA too.
           </div>
 
           <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', margin: '6px 0' }} />

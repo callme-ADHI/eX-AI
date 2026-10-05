@@ -1,187 +1,103 @@
 import { LIMITS } from '../../shared/constants';
-import { wrapToolResult } from '../../shared/safety';
-import { buildStructure } from './structure';
-import { collectLinks, buildLinksBlock } from './links';
+import type { ActivityItem } from './types';
 import { extractFromDocument } from './extract';
-import { getRegistry, isSensitiveUrl } from './urls';
-import { getSitemapUrls } from './sitemap';
+import { buildStructure } from './structure';
+import { collectLinks, formatLinkLine, rankLinks } from './links';
 import { fetchAndExtract } from './fetchPage';
+import { getSitemapUrls } from './sitemap';
+import { getRegistry, isBlockedUrl, isSameOrigin, isSensitiveUrl, redactUrl, urlKey } from './urls';
 import { searchIndex } from './siteIndex';
-import type { Scope, Region } from './types';
 
-export interface ToolExecutionResult {
-  ok: boolean;
-  content: string;
-  activityLabel: string;
-  url?: string;
+export interface ToolEnv {
+  signal: AbortSignal;
+  settings: { pageContextMaxChars: number };
+  overrides: Set<string>;                              // urlKeys the user approved with "Fetch anyway"
+  confirm: (message: string) => Promise<boolean>;      // ConsentBar-style prompt
+  onActivity: (a: ActivityItem) => void;
+  ownHost: Element | null;
 }
+export interface ToolResult { ok: boolean; content: string }
 
-export interface ToolConfirmHandler {
-  (message: string): Promise<boolean>;
-}
+const fail = (content: string): ToolResult => ({ ok: false, content });
+const pathOf = (u: string) => { try { const x = new URL(u); return x.pathname + x.search; } catch { return u; } };
 
-export async function executeTool(
-  name: string,
-  args: Record<string, unknown>,
-  ownHost: Element | null,
-  confirmHandler?: ToolConfirmHandler
-): Promise<ToolExecutionResult> {
-  const registry = getRegistry();
-
-  switch (name) {
-    case 'get_page_structure': {
-      const s = buildStructure(document, location.href);
-      return {
-        ok: true,
-        content: wrapToolResult(name, s),
-        activityLabel: 'Inspected page structure',
-      };
-    }
-
-    case 'get_page_links': {
-      const filter = (typeof args.filter === 'string' ? args.filter : 'all') as string;
-      const { links, contacts } = collectLinks(document, location.href, location.origin);
-      let filtered = links;
-      if (filter === 'internal') filtered = links.filter((l) => l.scope === 'internal');
-      else if (filter === 'external') filtered = links.filter((l) => l.scope === 'external');
-      else if (['nav', 'main', 'footer', 'header', 'aside'].includes(filter)) {
-        filtered = links.filter((l) => l.region === (filter as Region));
+export async function executeTool(name: string, args: Record<string, unknown>, env: ToolEnv): Promise<ToolResult> {
+  const id = crypto.randomUUID();
+  const act = (label: string, state: ActivityItem['state'], url?: string) => env.onActivity({ id, label, state, url });
+  try {
+    switch (name) {
+      case 'get_page_structure': {
+        act('Reading page structure', 'running');
+        const c = buildStructure(document, location.href);
+        act('Read page structure', 'done');
+        return { ok: true, content: c || '(no structure found)' };
       }
-
-      const b = buildLinksBlock(filtered, contacts, {
-        limit: LIMITS.linksMax,
-        maxChars: LIMITS.linksBlockMaxChars,
-      });
-      return {
-        ok: true,
-        content: wrapToolResult(name, b.text),
-        activityLabel: `Listed ${b.shown} links (${filter})`,
-      };
-    }
-
-    case 'get_page_text': {
-      const scope: Scope =
-        args.scope === 'page' || args.scope === 'selection' ? (args.scope as Scope) : 'main';
-      const r = extractFromDocument(document, {
-        scope,
-        maxChars: LIMITS.pageMaxCharsDefault,
-        keepQuery: false,
-        live: true,
-        pageUrl: location.href,
-        ownHost,
-      });
-      return {
-        ok: true,
-        content: wrapToolResult(name, r.text),
-        activityLabel: `Read page text (${scope})`,
-      };
-    }
-
-    case 'get_sitemap': {
-      const r = await getSitemapUrls(location.origin);
-      if (!r.ok) {
-        return {
-          ok: false,
-          content: wrapToolResult(name, `Failed to retrieve sitemap: ${r.error}`),
-          activityLabel: 'Checked sitemap (not found)',
-        };
+      case 'get_page_text': {
+        act('Reading page text', 'running');
+        const scope = (['main', 'page', 'selection'] as const).find(s => s === args.scope) ?? 'main';
+        const p = extractFromDocument(document, { scope, maxChars: LIMITS.toolResultMaxChars, keepQuery: false, live: true, pageUrl: location.href, ownHost: env.ownHost });
+        act('Read page text', 'done');
+        return { ok: true, content: `Title: ${p.title}\nURL: ${p.url}\nScope: ${p.source}${p.truncated ? '\nNote: truncated' : ''}\n\n${p.text}` };
       }
-      // Register sitemap URLs so model can fetch them
-      for (const u of r.urls) registry.add(u);
-      const text = r.urls.slice(0, 100).join('\n');
-      return {
-        ok: true,
-        content: wrapToolResult(name, text),
-        activityLabel: `Read sitemap (${r.urls.length} URLs)`,
-      };
-    }
-
-    case 'fetch_page': {
-      const resolved = registry.resolve(args, location.href);
-      if (!resolved) {
-        return {
-          ok: false,
-          content: wrapToolResult(
-            name,
-            'URL not recognised. You can only fetch URLs previously listed in page_links or tool results.'
-          ),
-          activityLabel: 'Blocked fetch (unrecognised URL)',
-        };
+      case 'get_page_links': {
+        act('Listing page links', 'running');
+        const { links } = collectLinks(document, location.href, location.origin);
+        const f = typeof args.filter === 'string' ? args.filter.toLowerCase() : '';
+        const limit = Math.min(200, Math.max(1, Number(args.limit) || 100));
+        const rows = rankLinks(links).filter(l =>
+          (!f || l.text.toLowerCase().includes(f) || l.url.toLowerCase().includes(f)) &&
+          (!args.scope || l.scope === args.scope) && (!args.region || l.region === args.region)).slice(0, limit);
+        act(`Listed ${rows.length} links`, 'done');
+        return { ok: true, content: rows.map(formatLinkLine).join('\n') || '(no matching links)' };
       }
-
-      if (isSensitiveUrl(resolved)) {
-        if (confirmHandler) {
-          const approved = await confirmHandler(
-            `Let the AI read this account-type page using your logged-in session?\n${resolved}`
-          );
-          if (!approved) {
-            return {
-              ok: false,
-              content: wrapToolResult(name, 'User declined access to this sensitive account page.'),
-              activityLabel: 'Blocked sensitive fetch (user declined)',
-              url: resolved,
-            };
-          }
+      case 'get_sitemap': {
+        act('Reading sitemap', 'running');
+        const urls = await getSitemapUrls(env.signal);
+        act(`Sitemap: ${urls.length} URLs`, urls.length ? 'done' : 'error');
+        if (!urls.length) return fail('No sitemap found for this site.');
+        const reg = getRegistry();
+        return { ok: true, content: urls.map(u => `${reg.idOf(u)} ${redactUrl(u)}`).join('\n') };
+      }
+      case 'search_site': {
+        const q = String(args.query ?? '').trim();
+        if (!q) return fail('Missing query.');
+        const hits = await searchIndex(location.origin, q, Math.min(8, Number(args.k) || 5));
+        act(`Searched site index for "${q.slice(0, 40)}"`, hits.length ? 'done' : 'error');
+        if (!hits.length) return fail('No indexed passages matched, or the site has not been indexed. The user can click "Index this site".');
+        return { ok: true, content: hits.map(h => `[${h.passage.title}${h.passage.heading ? ' › ' + h.passage.heading : ''}] ${redactUrl(h.passage.url)}\n${h.passage.text}`).join('\n\n') };
+      }
+      case 'fetch_page': {
+        const url = getRegistry().resolve(args as any, location.href);
+        if (!url) {
+          act('Rejected fetch (unknown link)', 'error');
+          return fail('Rejected: this is not a link id/URL that was collected from this site. Call get_page_links or get_sitemap and pass a link_id from the result.');
         }
+        if (!isSameOrigin(url, location.origin)) { act('Rejected external link', 'error', url); return fail('Only pages of the same website can be fetched.'); }
+        const key = urlKey(url);
+        const blocked = isBlockedUrl(url);
+        if (blocked.blocked && !env.overrides.has(key)) {
+          act(`Blocked ${pathOf(url)}`, 'blocked', url);
+          return fail(`Blocked for safety (${blocked.reason}). The user can approve this URL manually; tell them it was blocked and continue with what you have.`);
+        }
+        if (isSensitiveUrl(url) && !env.overrides.has(key)) {
+          const ok = await env.confirm(`Let the AI read this account-type page using your logged-in session?\n${pathOf(url)}`);
+          if (!ok) { act(`Declined ${pathOf(url)}`, 'blocked', url); return fail('The user declined to share this account-type page.'); }
+        }
+        act(`Fetching ${pathOf(url)}`, 'running', url);
+        const r = await fetchAndExtract(url, env.signal, LIMITS.toolResultMaxChars);
+        if (!r.ok) { act(`Failed ${pathOf(url)}: ${r.reason}`, 'error', url); return fail(`Fetch failed: ${r.reason}`); }
+        act(`Fetched ${pathOf(r.url)}`, 'done', r.url);
+        if (!r.page.rendered) {
+          return { ok: true, content: `URL: ${r.url}\nThis page is built with JavaScript and cannot be read by fetching (no readable text). Ask the user to open it and use the Page chip.` };
+        }
+        return { ok: true, content:
+          `URL: ${redactUrl(r.url)}\nTitle: ${r.page.title}\nStatus: ${r.status}${r.page.truncated ? '\nNote: text truncated' : ''}\n\n${r.page.text}\n\nLinks on that page:\n${r.linksText}` };
       }
-
-      const res = await fetchAndExtract(resolved, location.origin, LIMITS.toolResultMaxChars);
-      if (!res.ok || !res.page) {
-        return {
-          ok: false,
-          content: wrapToolResult(name, `Fetch failed: ${res.error || 'unknown error'}`),
-          activityLabel: `Fetch failed for ${resolved}`,
-          url: resolved,
-        };
-      }
-
-      const body = [
-        `URL: ${res.page.url}`,
-        `Title: ${res.page.title}`,
-        res.structure ? `\nStructure:\n${res.structure}` : '',
-        `\nText:\n${res.page.text}`,
-        res.linksText ? `\nLinks:\n${res.linksText}` : '',
-      ]
-        .filter(Boolean)
-        .join('\n');
-
-      return {
-        ok: true,
-        content: wrapToolResult(name, body),
-        activityLabel: `Fetched ${res.page.url.replace(location.origin, '') || '/'}`,
-        url: resolved,
-      };
+      default:
+        return fail(`Unknown tool: ${name}`);
     }
-
-    case 'search_site': {
-      const q = typeof args.query === 'string' ? args.query : '';
-      const limit = typeof args.limit === 'number' ? Math.min(10, Math.max(1, args.limit)) : 5;
-      const hits = await searchIndex(location.origin, q, limit);
-      if (!hits.length) {
-        return {
-          ok: true,
-          content: wrapToolResult(name, 'No matching passages found in the site index.'),
-          activityLabel: `Searched site for "${q}" (0 hits)`,
-        };
-      }
-      const formatted = hits
-        .map(
-          (h) =>
-            `[${h.passage.title || h.passage.url}${h.passage.heading ? ' › ' + h.passage.heading : ''}] ${h.passage.url}\n${h.passage.text}`
-        )
-        .join('\n\n');
-      return {
-        ok: true,
-        content: wrapToolResult(name, formatted),
-        activityLabel: `Searched site for "${q}" (${hits.length} hits)`,
-      };
-    }
-
-    default:
-      return {
-        ok: false,
-        content: wrapToolResult(name, `Unknown tool: ${name}`),
-        activityLabel: `Unknown tool ${name}`,
-      };
+  } catch (e: any) {
+    act(`${name} failed`, 'error');
+    return fail(`Tool error: ${String(e?.message ?? e).slice(0, 200)}`);
   }
 }
