@@ -5,7 +5,7 @@
   flex-direction: column;
   height: 100%;
   overflow: hidden;
-  color: #e8e8f0;
+  color: var(--text-primary, #e8e8f0);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 13px;
   background: transparent;
@@ -30,13 +30,13 @@
 .stateTitle {
   font-size: 15px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   margin: 0;
 }
 
 .stateDesc {
   font-size: 12px;
-  color: rgba(232, 232, 240, 0.65);
+  color: var(--text-secondary, rgba(232, 232, 240, 0.65));
   line-height: 1.5;
   margin: 0;
   max-width: 320px;
@@ -55,7 +55,7 @@
 
 /* Primary and Secondary Buttons */
 .primaryBtn {
-  background: #2452ff;
+  background: var(--accent, #2452ff);
   color: #ffffff;
   border: none;
   border-radius: 6px;
@@ -71,7 +71,7 @@
 }
 
 .primaryBtn:hover:not(:disabled) {
-  background: #3b66ff;
+  opacity: 0.92;
   box-shadow: 0 0 12px rgba(36, 82, 255, 0.4);
 }
 
@@ -81,9 +81,9 @@
 }
 
 .secondaryBtn {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e8e8f0;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--control-bg, rgba(255, 255, 255, 0.06));
+  color: var(--text-primary, #e8e8f0);
+  border: 1px solid var(--control-border, rgba(255, 255, 255, 0.12));
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 12px;
@@ -96,8 +96,8 @@
 }
 
 .secondaryBtn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--control-bg-hover, rgba(255, 255, 255, 0.1));
+  border-color: var(--control-border);
 }
 
 .secondaryBtn:disabled {
@@ -126,8 +126,8 @@
   flex-direction: column;
   gap: 8px;
   padding: 10px 14px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--panel-border, rgba(255, 255, 255, 0.08));
+  background: var(--header-bg, rgba(255, 255, 255, 0.02));
   flex-shrink: 0;
 }
 
@@ -140,7 +140,7 @@
 
 .toolbarStats {
   font-size: 11px;
-  color: rgba(232, 232, 240, 0.5);
+  color: var(--text-muted, rgba(232, 232, 240, 0.5));
   display: flex;
   align-items: center;
   gap: 8px;
@@ -158,8 +158,8 @@
 
 /* Proposal Row */
 .row {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--control-bg, rgba(255, 255, 255, 0.03));
+  border: 1px solid var(--control-border, rgba(255, 255, 255, 0.08));
   border-radius: 8px;
   padding: 12px;
   display: flex;
@@ -169,8 +169,8 @@
 }
 
 .row:hover {
-  border-color: rgba(36, 82, 255, 0.4);
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--accent);
+  background: var(--control-bg-hover, rgba(255, 255, 255, 0.05));
 }
 
 .rowHeader {
@@ -181,7 +181,7 @@
 
 .rowCheckbox {
   margin-top: 3px;
-  accent-color: #2452ff;
+  accent-color: var(--accent, #2452ff);
   cursor: pointer;
 }
 
@@ -193,7 +193,7 @@
 .rowQuestion {
   font-size: 13px;
   font-weight: 500;
-  color: #f0f0f8;
+  color: var(--text-primary, #f0f0f8);
   line-height: 1.4;
   margin: 0;
   word-break: break-word;
@@ -202,7 +202,7 @@
 .expandBtn {
   background: transparent;
   border: none;
-  color: #2452ff;
+  color: var(--accent, #2452ff);
   font-size: 11px;
   cursor: pointer;
   padding: 0;
@@ -252,8 +252,8 @@
 }
 
 .badgeConfidence {
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(232, 232, 240, 0.7);
+  background: var(--control-bg, rgba(255, 255, 255, 0.06));
+  color: var(--text-secondary, rgba(232, 232, 240, 0.7));
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 4px;
@@ -277,9 +277,9 @@
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(255, 255, 255, 0.02);
-  color: rgba(232, 232, 240, 0.85);
+  border: 1px solid var(--control-border, rgba(255, 255, 255, 0.1));
+  background: var(--control-bg, rgba(255, 255, 255, 0.02));
+  color: var(--text-secondary, rgba(232, 232, 240, 0.85));
   cursor: pointer;
   text-align: left;
   transition: all 0.12s ease;
@@ -287,13 +287,13 @@
 }
 
 .pill:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--control-bg-hover, rgba(255, 255, 255, 0.08));
 }
 
 .pillSelected {
-  background: rgba(36, 82, 255, 0.25);
-  border-color: #2452ff;
-  color: #ffffff;
+  background: var(--tab-active-bg, rgba(36, 82, 255, 0.25));
+  border-color: var(--accent, #2452ff);
+  color: var(--text-primary, #ffffff);
   font-weight: 500;
   box-shadow: 0 0 8px rgba(36, 82, 255, 0.2);
 }
@@ -302,11 +302,11 @@
 .inputField {
   width: 100%;
   box-sizing: border-box;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--input-bg, rgba(0, 0, 0, 0.3));
+  border: 1px solid var(--input-border, rgba(255, 255, 255, 0.12));
   border-radius: 6px;
   padding: 8px 10px;
-  color: #f0f0f8;
+  color: var(--input-text, #f0f0f8);
   font-size: 12px;
   font-family: inherit;
   resize: vertical;
@@ -314,7 +314,7 @@
 
 .inputField:focus {
   outline: none;
-  border-color: #2452ff;
+  border-color: var(--accent, #2452ff);
   box-shadow: 0 0 8px rgba(36, 82, 255, 0.3);
 }
 
@@ -342,8 +342,8 @@
 }
 
 .modalContent {
-  background: #0f1018;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--dropdown-bg, #0f1018);
+  border: 1px solid var(--dropdown-border, rgba(255, 255, 255, 0.15));
   border-radius: 10px;
   width: 100%;
   max-width: 440px;
@@ -351,12 +351,12 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+  box-shadow: var(--dropdown-shadow, 0 16px 40px rgba(0, 0, 0, 0.8));
 }
 
 .modalHeader {
   padding: 14px 18px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--control-border, rgba(255, 255, 255, 0.08));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -365,7 +365,7 @@
 .modalTitle {
   font-size: 14px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   margin: 0;
 }
 
@@ -376,12 +376,12 @@
   flex-direction: column;
   gap: 12px;
   font-size: 12px;
-  color: rgba(232, 232, 240, 0.8);
+  color: var(--text-secondary, rgba(232, 232, 240, 0.8));
 }
 
 .modalFooter {
   padding: 12px 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--control-border, rgba(255, 255, 255, 0.08));
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -391,7 +391,7 @@
 /* Highlight layer */
 .highlightBox {
   position: fixed;
-  border: 2px solid #2452ff;
+  border: 2px solid var(--accent, #2452ff);
   background: rgba(36, 82, 255, 0.15);
   pointer-events: none;
   border-radius: 4px;
@@ -431,11 +431,11 @@
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: #151824;
-  border: 1px solid #2452ff;
+  background: var(--dropdown-bg, #151824);
+  border: 1px solid var(--accent, #2452ff);
   border-radius: 8px;
   padding: 8px 16px;
-  color: #ffffff;
+  color: var(--text-primary, #ffffff);
   font-size: 12px;
   font-weight: 500;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);

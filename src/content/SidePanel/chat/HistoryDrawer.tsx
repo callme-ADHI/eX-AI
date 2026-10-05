@@ -91,7 +91,7 @@ export default function HistoryDrawer({
                       style={{
                         fontWeight: 600,
                         fontSize: '12px',
-                        color: chat.id === activeChatId ? '#ffffff' : '#e8e8f0',
+                        color: chat.id === activeChatId ? 'var(--accent)' : 'var(--text-primary)',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
@@ -99,7 +99,7 @@ export default function HistoryDrawer({
                     >
                       {chat.title}
                     </div>
-                    <div style={{ fontSize: '10px', color: 'rgba(232, 232, 240, 0.45)', marginTop: '2px' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
                       {chat.mode.toUpperCase()} · {new Date(chat.updatedAt).toLocaleDateString()}
                     </div>
                   </>

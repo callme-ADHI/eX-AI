@@ -71,23 +71,23 @@ export default function BrowseMenu({
             right: 0,
             marginTop: '6px',
             width: '260px',
-            background: '#161622',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: 'var(--dropdown-bg, #161622)',
+            border: '1px solid var(--dropdown-border, rgba(255, 255, 255, 0.15))',
             borderRadius: '8px',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.65)',
+            boxShadow: 'var(--dropdown-shadow, 0 8px 32px rgba(0, 0, 0, 0.65))',
             padding: '10px',
             zIndex: 9999,
             fontSize: '11px',
-            color: '#e8e8f0',
+            color: 'var(--text-primary, #e8e8f0)',
           }}
         >
-          <div style={{ fontWeight: 700, color: '#7094ff', marginBottom: '8px', fontSize: '12px' }}>
+          <div style={{ fontWeight: 700, color: 'var(--accent)', marginBottom: '8px', fontSize: '12px' }}>
             🌐 Website Browse
           </div>
 
           {/* Scope Picker */}
           <div style={{ marginBottom: '10px' }}>
-            <div style={{ fontSize: '10px', color: 'rgba(232, 232, 240, 0.6)', marginBottom: '4px' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
               PAGE CONTEXT
             </div>
             <div style={{ display: 'flex', gap: '3px' }}>
@@ -101,8 +101,8 @@ export default function BrowseMenu({
                     fontSize: '10px',
                     borderRadius: '4px',
                     border: '1px solid',
-                    borderColor: pageScope === s ? '#2452ff' : 'rgba(255, 255, 255, 0.1)',
-                    background: pageScope === s ? '#2452ff' : 'rgba(255, 255, 255, 0.05)',
+                    borderColor: pageScope === s ? 'var(--accent)' : 'var(--control-border)',
+                    background: pageScope === s ? 'var(--accent)' : 'var(--control-bg)',
                     color: pageScope === s ? '#fff' : 'inherit',
                     cursor: 'pointer',
                   }}
@@ -115,7 +115,7 @@ export default function BrowseMenu({
 
           {/* Browse Mode */}
           <div style={{ marginBottom: '10px' }}>
-            <div style={{ fontSize: '10px', color: 'rgba(232, 232, 240, 0.6)', marginBottom: '4px' }}>
+            <div style={{ fontSize: '10px', color: 'var(--text-secondary)', marginBottom: '4px' }}>
               BROWSE CAPABILITY
             </div>
             <div style={{ display: 'flex', gap: '4px' }}>
@@ -127,9 +127,9 @@ export default function BrowseMenu({
                   fontSize: '10px',
                   borderRadius: '4px',
                   border: '1px solid',
-                  borderColor: browseMode === 'context' ? '#2452ff' : 'rgba(255, 255, 255, 0.1)',
-                  background: browseMode === 'context' ? 'rgba(36, 82, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                  color: browseMode === 'context' ? '#7094ff' : 'inherit',
+                  borderColor: browseMode === 'context' ? 'var(--accent)' : 'var(--control-border)',
+                  background: browseMode === 'context' ? 'var(--tab-active-bg)' : 'var(--control-bg)',
+                  color: browseMode === 'context' ? 'var(--accent)' : 'inherit',
                   cursor: 'pointer',
                 }}
                 title="Send current page text with the user prompt"
@@ -144,9 +144,9 @@ export default function BrowseMenu({
                   fontSize: '10px',
                   borderRadius: '4px',
                   border: '1px solid',
-                  borderColor: browseMode === 'tools' ? '#2452ff' : 'rgba(255, 255, 255, 0.1)',
-                  background: browseMode === 'tools' ? 'rgba(36, 82, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)',
-                  color: browseMode === 'tools' ? '#7094ff' : 'inherit',
+                  borderColor: browseMode === 'tools' ? 'var(--accent)' : 'var(--control-border)',
+                  background: browseMode === 'tools' ? 'var(--tab-active-bg)' : 'var(--control-bg)',
+                  color: browseMode === 'tools' ? 'var(--accent)' : 'inherit',
                   cursor: 'pointer',
                 }}
                 title="Model can call tools to fetch linked pages and sitemap"
@@ -156,28 +156,28 @@ export default function BrowseMenu({
             </div>
           </div>
 
-          <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', margin: '6px 0' }} />
+          <div style={{ borderTop: '1px solid var(--control-border)', margin: '6px 0' }} />
 
           {/* Quick Actions */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
             <button
               className={styles.menuItem}
               onClick={() => handleAction('Show me the structure and headings of this page')}
-              style={{ textAlign: 'left', padding: '6px 8px', background: 'none', border: 'none', color: '#e8e8f0', cursor: 'pointer', borderRadius: '4px' }}
+              style={{ textAlign: 'left', padding: '6px 8px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', borderRadius: '4px' }}
             >
               📐 Inspect structure
             </button>
             <button
               className={styles.menuItem}
               onClick={() => handleAction('List all internal links on this page')}
-              style={{ textAlign: 'left', padding: '6px 8px', background: 'none', border: 'none', color: '#e8e8f0', cursor: 'pointer', borderRadius: '4px' }}
+              style={{ textAlign: 'left', padding: '6px 8px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', borderRadius: '4px' }}
             >
               🔗 List page links
             </button>
             <button
               className={styles.menuItem}
               onClick={() => handleAction('Check the sitemap for this website')}
-              style={{ textAlign: 'left', padding: '6px 8px', background: 'none', border: 'none', color: '#e8e8f0', cursor: 'pointer', borderRadius: '4px' }}
+              style={{ textAlign: 'left', padding: '6px 8px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', borderRadius: '4px' }}
             >
               🗺️ Read sitemap
             </button>
@@ -191,22 +191,22 @@ export default function BrowseMenu({
                   setIsOpen(false);
                   onOpenIndexDrawer();
                 }}
-                style={{ textAlign: 'left', padding: '6px 8px', background: 'none', border: 'none', color: '#e8e8f0', cursor: 'pointer', borderRadius: '4px' }}
+                style={{ textAlign: 'left', padding: '6px 8px', background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', borderRadius: '4px' }}
               >
                 📚 Site Index & Search
               </button>
             )}
           </div>
 
-          <div style={{ fontSize: '9px', color: 'rgba(232, 232, 240, 0.4)', marginTop: '4px', fontStyle: 'italic' }}>
+          <div style={{ fontSize: '9px', color: 'var(--text-muted)', marginTop: '4px', fontStyle: 'italic' }}>
             Tools send fetched page text to NVIDIA too.
           </div>
 
-          <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', margin: '6px 0' }} />
+          <div style={{ borderTop: '1px solid var(--control-border)', margin: '6px 0' }} />
 
           {/* Consent status for origin */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px' }}>
-            <span style={{ color: isAllowed ? '#4ade80' : 'rgba(232, 232, 240, 0.5)' }}>
+            <span style={{ color: isAllowed ? '#4ade80' : 'var(--text-muted)' }}>
               {isAllowed ? '✓ Site allowed' : '○ Consent needed'}
             </span>
             {isAllowed && (

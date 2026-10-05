@@ -14,6 +14,9 @@ export type OCRMode = 'text' | 'code';
 /** Browse mode: context only vs tool-augmented */
 export type BrowseMode = 'context' | 'tools';
 
+/** Theme mode for the panel UI */
+export type ThemeMode = 'dark' | 'light' | 'auto';
+
 /** eX-AI settings shape — all fields have defaults */
 export interface ExAISettings {
   model: string;
@@ -26,6 +29,7 @@ export interface ExAISettings {
   ocrDefaultMode: OCRMode;
   securityEngineEnabled: boolean;
   showAllModels: boolean;
+  themeMode: ThemeMode;
   // Website Awareness settings
   pageContext: 'off' | Scope;
   pageContextMaxChars: number;
@@ -54,6 +58,7 @@ export const DEFAULT_EXAI_SETTINGS: ExAISettings = {
   ocrDefaultMode: 'text',
   securityEngineEnabled: false,
   showAllModels: false,
+  themeMode: 'dark',
   pageContext: 'off',
   pageContextMaxChars: 60_000,
   pageContextKeepQuery: false,

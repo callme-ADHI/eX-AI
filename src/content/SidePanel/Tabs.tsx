@@ -15,10 +15,10 @@ export default function Tabs({ activeTab, onTabChange, onClose }: TabsProps) {
   const tabStyle = (id: TabId): React.CSSProperties => ({
     flex: 1,
     padding: '8px 10px',
-    background: activeTab === id ? 'rgba(36,82,255,0.18)' : 'transparent',
+    background: activeTab === id ? 'var(--tab-active-bg, rgba(36,82,255,0.18))' : 'transparent',
     border: 'none',
-    borderBottom: activeTab === id ? '2px solid rgba(36,82,255,0.9)' : '2px solid transparent',
-    color: activeTab === id ? '#e8e8f0' : 'rgba(232,232,240,0.45)',
+    borderBottom: activeTab === id ? '2px solid var(--accent, rgba(36,82,255,0.9))' : '2px solid transparent',
+    color: activeTab === id ? 'var(--text-primary, #e8e8f0)' : 'var(--text-muted, rgba(232,232,240,0.45))',
     fontSize: '11px',
     fontWeight: 700,
     letterSpacing: '0.08em',
@@ -32,7 +32,7 @@ export default function Tabs({ activeTab, onTabChange, onClose }: TabsProps) {
     <div style={{
       display: 'flex',
       alignItems: 'stretch',
-      borderBottom: '1px solid rgba(255,255,255,0.07)',
+      borderBottom: '1px solid var(--panel-border, rgba(255,255,255,0.07))',
       flexShrink: 0,
       minHeight: '36px',
     }}>
@@ -46,7 +46,7 @@ export default function Tabs({ activeTab, onTabChange, onClose }: TabsProps) {
         Autofill
       </button>
       {/* Spacer */}
-      <div style={{ flex: 0, width: '1px', background: 'rgba(255,255,255,0.07)', margin: '6px 0' }} />
+      <div style={{ flex: 0, width: '1px', background: 'var(--panel-border, rgba(255,255,255,0.07))', margin: '6px 0' }} />
       {/* Close button */}
       <button
         onClick={onClose}
@@ -56,7 +56,7 @@ export default function Tabs({ activeTab, onTabChange, onClose }: TabsProps) {
           flexShrink: 0,
           background: 'transparent',
           border: 'none',
-          color: 'rgba(232,232,240,0.45)',
+          color: 'var(--text-muted, rgba(232,232,240,0.45))',
           fontSize: '16px',
           cursor: 'pointer',
           display: 'flex',
@@ -65,8 +65,8 @@ export default function Tabs({ activeTab, onTabChange, onClose }: TabsProps) {
           transition: 'color 0.15s',
           fontFamily: 'inherit',
         }}
-        onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.color = '#e8e8f0'; }}
-        onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.color = 'rgba(232,232,240,0.45)'; }}
+        onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-primary, #e8e8f0)'; }}
+        onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-muted, rgba(232,232,240,0.45))'; }}
       >
         ×
       </button>

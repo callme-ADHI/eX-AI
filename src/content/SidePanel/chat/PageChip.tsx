@@ -210,21 +210,21 @@ export default function PageChip({
             width: '320px',
             maxHeight: '380px',
             overflowY: 'auto',
-            background: '#161622',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            background: 'var(--dropdown-bg, #161622)',
+            border: '1px solid var(--dropdown-border, rgba(255, 255, 255, 0.15))',
             borderRadius: '8px',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.6)',
+            boxShadow: 'var(--dropdown-shadow, 0 8px 32px rgba(0, 0, 0, 0.6))',
             padding: '12px',
             zIndex: 9999,
             fontSize: '11px',
-            color: '#e8e8f0',
+            color: 'var(--text-primary, #e8e8f0)',
           }}
         >
           <div style={{ fontWeight: 600, marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
             <span>Page Context Options</span>
             <button
               onClick={() => setShowPopover(false)}
-              style={{ background: 'none', border: 'none', color: 'rgba(232, 232, 240, 0.5)', cursor: 'pointer' }}
+              style={{ background: 'none', border: 'none', color: 'var(--text-muted, rgba(232, 232, 240, 0.5))', cursor: 'pointer' }}
             >
               ✕
             </button>
@@ -241,8 +241,8 @@ export default function PageChip({
                   borderRadius: '4px',
                   fontSize: '10px',
                   border: '1px solid',
-                  borderColor: scope === s ? '#2452ff' : 'rgba(255, 255, 255, 0.1)',
-                  background: scope === s ? '#2452ff' : 'rgba(255, 255, 255, 0.05)',
+                  borderColor: scope === s ? 'var(--accent)' : 'var(--control-border)',
+                  background: scope === s ? 'var(--accent)' : 'var(--control-bg)',
                   color: scope === s ? '#fff' : 'inherit',
                   cursor: 'pointer',
                 }}
@@ -254,12 +254,13 @@ export default function PageChip({
 
           {previewData && (
             <div>
-              <div style={{ fontWeight: 600, color: '#7094ff', marginBottom: '4px' }}>
+              <div style={{ fontWeight: 600, color: 'var(--accent)', marginBottom: '4px' }}>
                 Preview ({previewData.page.chars.toLocaleString()} chars · {previewData.totalLinks} links)
               </div>
               <div
                 style={{
-                  background: 'rgba(0, 0, 0, 0.3)',
+                  background: 'var(--control-bg, rgba(0, 0, 0, 0.3))',
+                  border: '1px solid var(--control-border)',
                   padding: '6px',
                   borderRadius: '4px',
                   maxHeight: '120px',
@@ -267,7 +268,7 @@ export default function PageChip({
                   whiteSpace: 'pre-wrap',
                   fontFamily: 'monospace',
                   fontSize: '10px',
-                  color: 'rgba(232, 232, 240, 0.8)',
+                  color: 'var(--text-secondary, rgba(232, 232, 240, 0.8))',
                   marginBottom: '8px',
                 }}
               >
@@ -276,10 +277,11 @@ export default function PageChip({
 
               {previewData.structure && (
                 <>
-                  <div style={{ fontWeight: 600, color: '#7094ff', marginBottom: '4px' }}>Structure</div>
+                  <div style={{ fontWeight: 600, color: 'var(--accent)', marginBottom: '4px' }}>Structure</div>
                   <div
                     style={{
-                      background: 'rgba(0, 0, 0, 0.3)',
+                      background: 'var(--control-bg, rgba(0, 0, 0, 0.3))',
+                      border: '1px solid var(--control-border)',
                       padding: '6px',
                       borderRadius: '4px',
                       maxHeight: '80px',
@@ -287,7 +289,7 @@ export default function PageChip({
                       whiteSpace: 'pre-wrap',
                       fontFamily: 'monospace',
                       fontSize: '10px',
-                      color: 'rgba(232, 232, 240, 0.8)',
+                      color: 'var(--text-secondary, rgba(232, 232, 240, 0.8))',
                     }}
                   >
                     {previewData.structure}

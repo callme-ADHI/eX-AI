@@ -52,12 +52,18 @@ export default function ChatPanel({
     updateSettings,
     saveKey,
     clearKey,
+    toggleTheme,
     pageScope,
     setPageScope,
     consentPrompt,
     jsOnlyNotice,
     setJsOnlyNotice,
   } = useChat({ ownHost });
+
+  const resolvedTheme: 'light' | 'dark' =
+    settings.themeMode === 'auto'
+      ? (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')
+      : (settings.themeMode === 'light' ? 'light' : 'dark');
 
   const [composerText, setComposerText] = useState(initialInput || '');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -104,7 +110,7 @@ export default function ChatPanel({
   };
 
   return (
-    <div className={styles.chatContainer}>
+    <div className={styles.chatContainer} data-theme={resolvedTheme}>
       <ChatHeader
         mode={session.mode}
         onModeChange={setMode}
@@ -121,6 +127,9 @@ export default function ChatPanel({
         browseMode={settings.browseMode || 'context'}
         onBrowseModeChange={(mode) => updateSettings({ browseMode: mode })}
         onTriggerAction={(text) => sendMessage(text)}
+        themeMode={settings.themeMode}
+        resolvedTheme={resolvedTheme}
+        onToggleTheme={toggleTheme}
       />
 
       <MessageList

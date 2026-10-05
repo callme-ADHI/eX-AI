@@ -786,6 +786,22 @@ export function useChat(options: UseChatOptions = {}) {
     await refreshModels(true);
   }, [refreshSettings, refreshModels]);
 
+  // Toggle theme between light and dark
+  const toggleTheme = useCallback(async () => {
+    const current = settings.themeMode || 'dark';
+    let next: 'dark' | 'light' = 'dark';
+    if (current === 'auto') {
+      const prefersLight =
+        typeof window !== 'undefined' &&
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: light)').matches;
+      next = prefersLight ? 'dark' : 'light';
+    } else {
+      next = current === 'light' ? 'dark' : 'light';
+    }
+    await updateSettings({ themeMode: next });
+  }, [settings.themeMode, updateSettings]);
+
   return {
     session,
     chatIndex,
@@ -810,6 +826,7 @@ export function useChat(options: UseChatOptions = {}) {
     updateSettings,
     saveKey,
     clearKey,
+    toggleTheme,
     // Website Awareness
     pageScope,
     setPageScope,

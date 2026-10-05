@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { FocusSession } from '../../shared/types';
-import type { OCRMode } from '../../shared/aiTypes';
+import type { OCRMode, ThemeMode } from '../../shared/aiTypes';
 import { KEYS } from '../../shared/storage';
 import FocusGlance from './FocusGlance';
 import EdgeTrigger from './EdgeTrigger';
@@ -9,6 +9,7 @@ import Tabs, { type TabId } from './Tabs';
 import ChatPanel from './chat/ChatPanel';
 import AutofillTab from './autofill/AutofillTab';
 import SnipOverlay, { SnipResult } from './SnipOverlay';
+import styles from './SidePanel.module.css';
 import type { AttachmentChipData } from './chat/Composer';
 
 interface Props {
@@ -88,6 +89,24 @@ export default function SidePanel({
   const [activeTab, setActiveTab] = useState<TabId>('ai');
   const [panelWidth, setPanelWidth] = useState(defaultWidth);
   const [edgeTriggerMode, setEdgeTriggerMode] = useState<'strip' | 'handle' | 'off'>('strip');
+  const [themeMode, setThemeMode] = useState<ThemeMode>('dark');
+  const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(() => {
+    return typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+      ? 'light'
+      : 'dark';
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return;
+    const mql = window.matchMedia('(prefers-color-scheme: light)');
+    const handler = (e: MediaQueryListEvent) => {
+      setSystemTheme(e.matches ? 'light' : 'dark');
+    };
+    mql.addEventListener('change', handler);
+    return () => mql.removeEventListener('change', handler);
+  }, []);
+
+  const resolvedTheme: 'light' | 'dark' = themeMode === 'auto' ? systemTheme : (themeMode === 'light' ? 'light' : 'dark');
 
   // Snip & OCR states
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
@@ -116,7 +135,21 @@ export default function SidePanel({
       const settings = res[SETTINGS_KEY] as Record<string, unknown> | undefined;
       const mode = settings?.edgeTrigger as 'strip' | 'handle' | 'off' | undefined;
       if (mode) setEdgeTriggerMode(mode);
+
+      const theme = settings?.themeMode as ThemeMode | undefined;
+      if (theme) setThemeMode(theme);
     });
+
+    const onStorageChange = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area === 'local' && changes[SETTINGS_KEY]) {
+        const newSettings = changes[SETTINGS_KEY].newValue as Record<string, unknown> | undefined;
+        if (newSettings?.themeMode) {
+          setThemeMode(newSettings.themeMode as ThemeMode);
+        }
+      }
+    };
+    chrome.storage.onChanged.addListener(onStorageChange);
+    return () => chrome.storage.onChanged.removeListener(onStorageChange);
   }, []);
 
   // ── Container styles ──────────────────────────────────────────────────────
@@ -430,6 +463,8 @@ export default function SidePanel({
         {open && (
           <motion.div
             key="side-panel"
+            className={styles.panelContainer}
+            data-theme={resolvedTheme}
             initial={{ x: '100%', opacity: 0.6 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '100%', opacity: 0 }}
@@ -446,15 +481,17 @@ export default function SidePanel({
               height: '100vh',
               display: isPanelHiddenForSnip ? 'none' : 'flex',
               flexDirection: 'column',
-              background: 'rgba(10, 10, 12, 0.96)',
+              background: 'var(--panel-bg, rgba(10, 10, 12, 0.96))',
               backdropFilter: 'blur(24px)',
               WebkitBackdropFilter: 'blur(24px)',
-              borderLeft: '1px solid rgba(255,255,255,0.07)',
+              borderLeft: '1px solid var(--panel-border, rgba(255,255,255,0.07))',
+              boxShadow: 'var(--panel-shadow, -10px 0 60px rgba(0, 0, 0, 0.9))',
               overflow: 'hidden',
-              color: '#e8e8f0',
+              color: 'var(--text-primary, #e8e8f0)',
               fontFamily: "'Inter', 'IBM Plex Mono', system-ui, sans-serif",
               zIndex: 2147483647,
               overscrollBehavior: 'contain',
+              transition: 'background 0.2s ease, color 0.2s ease, border-color 0.2s ease',
             }}
             onKeyDown={(e) => {
               e.stopPropagation();

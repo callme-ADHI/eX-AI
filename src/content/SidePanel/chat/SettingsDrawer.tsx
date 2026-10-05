@@ -154,17 +154,35 @@ export default function SettingsDrawer({
           </div>
         </div>
 
+        {/* Appearance & Theme Section */}
+        <div className={styles.fieldGroup}>
+          <label className={styles.fieldLabel}>Appearance & Theme</label>
+          <select
+            className={styles.fieldInput}
+            value={settings.themeMode || 'dark'}
+            onChange={(e) =>
+              onUpdateSettings({ themeMode: e.target.value as any })
+            }
+          >
+            <option value="dark">🌙 Dark Mode (Instrument Dark)</option>
+            <option value="light">☀️ Light Mode (Clean Slate)</option>
+            <option value="auto">🖥️ System Default (Auto)</option>
+          </select>
+          <div className={styles.fieldNote}>
+            Can also be quickly toggled with the ☀️/🌙 icon in the chat header.
+          </div>
+        </div>
+
         {/* Default Model */}
         <div className={styles.fieldGroup}>
           <label className={styles.fieldLabel}>Default Model</label>
           <select
             className={styles.fieldInput}
-            style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
             value={settings.model}
             onChange={(e) => onUpdateSettings({ model: e.target.value })}
           >
             {models.map((m) => (
-              <option key={m.id} value={m.id} style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>
+              <option key={m.id} value={m.id}>
                 {m.label || m.id}
               </option>
             ))}
@@ -176,15 +194,14 @@ export default function SettingsDrawer({
           <label className={styles.fieldLabel}>Edge Trigger Style</label>
           <select
             className={styles.fieldInput}
-            style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
             value={settings.edgeTrigger}
             onChange={(e) =>
               onUpdateSettings({ edgeTrigger: e.target.value as any })
             }
           >
-            <option value="strip" style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>Strip + Handle (hover right edge or handle)</option>
-            <option value="handle" style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>Handle only (hover or click pill handle)</option>
-            <option value="off" style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>Off (keyboard shortcut only)</option>
+            <option value="strip">Strip + Handle (hover right edge or handle)</option>
+            <option value="handle">Handle only (hover or click pill handle)</option>
+            <option value="off">Off (keyboard shortcut only)</option>
           </select>
         </div>
 
@@ -210,14 +227,13 @@ export default function SettingsDrawer({
           <label className={styles.fieldLabel}>Default OCR Mode</label>
           <select
             className={styles.fieldInput}
-            style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
             value={settings.ocrDefaultMode}
             onChange={(e) =>
               onUpdateSettings({ ocrDefaultMode: e.target.value as any })
             }
           >
-            <option value="text" style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>Text mode (smart line wrap & clean formatting)</option>
-            <option value="code" style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>Code mode (preserves indentation & whitespace)</option>
+            <option value="text">Text mode (smart line wrap & clean formatting)</option>
+            <option value="code">Code mode (preserves indentation & whitespace)</option>
           </select>
         </div>
 
@@ -263,7 +279,6 @@ export default function SettingsDrawer({
             <label className={styles.fieldLabel}>Default Page Context</label>
             <select
               className={styles.fieldInput}
-              style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
               value={settings.pageContext || 'off'}
               onChange={(e) =>
                 onUpdateSettings({ pageContext: e.target.value as any })
@@ -280,7 +295,7 @@ export default function SettingsDrawer({
           <div className={styles.fieldGroup}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <label className={styles.fieldLabel}>Max Page Characters</label>
-              <span style={{ fontSize: '11px', color: '#7094ff' }}>
+              <span style={{ fontSize: '11px', color: 'var(--accent)' }}>
                 {(settings.pageContextMaxChars || 60_000).toLocaleString()} chars
               </span>
             </div>
@@ -293,7 +308,7 @@ export default function SettingsDrawer({
               onChange={(e) =>
                 onUpdateSettings({ pageContextMaxChars: Number(e.target.value) })
               }
-              style={{ accentColor: '#2452ff' }}
+              style={{ accentColor: 'var(--accent)' }}
             />
           </div>
 
@@ -302,7 +317,6 @@ export default function SettingsDrawer({
             <label className={styles.fieldLabel}>Browse Capability</label>
             <select
               className={styles.fieldInput}
-              style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
               value={settings.browseMode || 'context'}
               onChange={(e) =>
                 onUpdateSettings({ browseMode: e.target.value as any })
@@ -448,12 +462,12 @@ export default function SettingsDrawer({
         {/* Usage note */}
         <div
           style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            background: 'var(--control-bg, rgba(255, 255, 255, 0.03))',
+            border: '1px solid var(--control-border, rgba(255, 255, 255, 0.08))',
             borderRadius: '6px',
             padding: '10px 12px',
             fontSize: '11px',
-            color: 'rgba(232, 232, 240, 0.6)',
+            color: 'var(--text-secondary, rgba(232, 232, 240, 0.6))',
             lineHeight: 1.5,
             marginTop: '12px',
           }}
@@ -466,13 +480,13 @@ export default function SettingsDrawer({
           style={{
             textAlign: 'center',
             fontSize: '11px',
-            color: 'rgba(232, 232, 240, 0.45)',
+            color: 'var(--text-muted, rgba(232, 232, 240, 0.45))',
             marginTop: '8px',
-            borderTop: '1px solid rgba(255, 255, 255, 0.06)',
+            borderTop: '1px solid var(--control-border, rgba(255, 255, 255, 0.06))',
             paddingTop: '12px',
           }}
         >
-          eX-AI v2.0 · Built with ⚡ by <strong style={{ color: '#7094ff' }}>ADHI</strong>
+          eX-AI v2.0 · Built with ⚡ by <strong style={{ color: 'var(--accent)' }}>ADHI</strong>
         </div>
       </div>
     </div>

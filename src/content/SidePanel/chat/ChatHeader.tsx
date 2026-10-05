@@ -1,5 +1,5 @@
 import React from 'react';
-import type { AIMode, ModelEntry, BrowseMode } from '../../../shared/aiTypes';
+import type { AIMode, ModelEntry, BrowseMode, ThemeMode } from '../../../shared/aiTypes';
 import type { Scope } from '../../pageText/types';
 import BrowseMenu from './BrowseMenu';
 import { ComponentErrorBoundary } from './ComponentErrorBoundary';
@@ -23,6 +23,10 @@ interface ChatHeaderProps {
   onBrowseModeChange: (mode: BrowseMode) => void;
   onTriggerAction: (promptText: string) => void;
   onOpenIndexDrawer?: () => void;
+  // Theme
+  themeMode?: ThemeMode;
+  resolvedTheme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
 }
 
 export default function ChatHeader({
@@ -42,6 +46,9 @@ export default function ChatHeader({
   onBrowseModeChange,
   onTriggerAction,
   onOpenIndexDrawer,
+  themeMode = 'dark',
+  resolvedTheme = 'dark',
+  onToggleTheme,
 }: ChatHeaderProps) {
   const modes: Array<{ id: AIMode; label: string }> = [
     { id: 'general', label: 'General' },
@@ -55,10 +62,10 @@ export default function ChatHeader({
       {/* Brand title bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '2px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
             ⚡ eX-AI
           </span>
-          <span style={{ fontSize: '10px', color: '#7094ff', fontWeight: 600, background: 'rgba(36, 82, 255, 0.15)', padding: '1px 6px', borderRadius: '4px' }}>
+          <span style={{ fontSize: '10px', color: 'var(--accent)', fontWeight: 600, background: 'var(--tab-active-bg, rgba(36, 82, 255, 0.15))', padding: '1px 6px', borderRadius: '4px' }}>
             by ADHI
           </span>
         </div>
@@ -89,6 +96,16 @@ export default function ChatHeader({
               onOpenIndexDrawer={onOpenIndexDrawer}
             />
           </ComponentErrorBoundary>
+          {onToggleTheme && (
+            <button
+              className={styles.iconBtn}
+              onClick={onToggleTheme}
+              title={`Switch to ${resolvedTheme === 'light' ? 'Dark' : 'Light'} Mode`}
+              aria-label="Toggle theme"
+            >
+              {resolvedTheme === 'light' ? '🌙' : '☀️'}
+            </button>
+          )}
           <button
             className={styles.iconBtn}
             onClick={onNewChat}
@@ -120,13 +137,12 @@ export default function ChatHeader({
       <div className={styles.headerRowSub}>
         <select
           className={styles.modelSelect}
-          style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
           value={selectedModel}
           onChange={(e) => onModelChange(e.target.value)}
           title="Active NIM Model"
         >
           {models.map((m) => (
-            <option key={m.id} value={m.id} style={{ backgroundColor: '#161622', color: '#e8e8f0' }}>
+            <option key={m.id} value={m.id}>
               {m.label || m.id}
             </option>
           ))}

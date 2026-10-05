@@ -27,6 +27,29 @@
 }
 
 .panelContainer {
+  /* Default / Dark Theme Tokens */
+  --panel-bg: rgba(10, 10, 15, 0.96);
+  --panel-border: rgba(255, 255, 255, 0.10);
+  --panel-shadow: -10px 0 60px rgba(0, 0, 0, 0.85);
+  --text-primary: #f1f5f9;
+  --text-secondary: rgba(232, 232, 240, 0.70);
+  --text-muted: rgba(232, 232, 240, 0.45);
+  --accent: #2452ff;
+  --accent-glow: #00ffd2;
+  --tab-active-bg: rgba(36, 82, 255, 0.18);
+  --tab-border: rgba(255, 255, 255, 0.07);
+  --header-bg: rgba(14, 14, 20, 0.85);
+  --control-bg: rgba(255, 255, 255, 0.04);
+  --control-bg-hover: rgba(255, 255, 255, 0.08);
+  --control-border: rgba(255, 255, 255, 0.10);
+  --input-bg: #14141c;
+  --input-border: rgba(255, 255, 255, 0.14);
+  --input-text: #ffffff;
+  --dropdown-bg: #161622;
+  --dropdown-border: rgba(255, 255, 255, 0.15);
+  --dropdown-shadow: 0 8px 32px rgba(0, 0, 0, 0.65);
+  --color-scheme: dark;
+
   position: fixed;
   right: 0;
   top: 0;
@@ -34,15 +57,40 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  border-left: 1px solid rgba(255,255,255,0.12);
-  box-shadow: -10px 0 60px rgba(0, 0, 0, 0.9);
+  border-left: 1px solid var(--panel-border, rgba(255,255,255,0.12));
+  box-shadow: var(--panel-shadow, -10px 0 60px rgba(0, 0, 0, 0.9));
   z-index: 2147483647;
-  background: rgba(8, 8, 12, 0.96);
+  background: var(--panel-bg, rgba(8, 8, 12, 0.96));
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
   overflow: hidden;
-  color: #e8e8f0;
+  color: var(--text-primary, #e8e8f0);
   font-family: 'Inter', 'IBM Plex Mono', system-ui, sans-serif;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.panelContainer[data-theme="light"] {
+  --panel-bg: rgba(255, 255, 255, 0.98);
+  --panel-border: rgba(0, 0, 0, 0.10);
+  --panel-shadow: -10px 0 45px rgba(0, 0, 0, 0.12);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --accent: #2563eb;
+  --accent-glow: #3b82f6;
+  --tab-active-bg: rgba(37, 99, 235, 0.12);
+  --tab-border: rgba(0, 0, 0, 0.08);
+  --header-bg: rgba(248, 250, 252, 0.95);
+  --control-bg: rgba(0, 0, 0, 0.04);
+  --control-bg-hover: rgba(0, 0, 0, 0.08);
+  --control-border: rgba(0, 0, 0, 0.10);
+  --input-bg: #ffffff;
+  --input-border: rgba(0, 0, 0, 0.14);
+  --input-text: #0f172a;
+  --dropdown-bg: #ffffff;
+  --dropdown-border: rgba(0, 0, 0, 0.12);
+  --dropdown-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --color-scheme: light;
 }
 
 .activeBorderLine {
@@ -75,7 +123,7 @@
 .sectionHeader {
   font-size: 10px;
   font-weight: 700;
-  color: rgba(255,255,255,0.35);
+  color: var(--text-muted, rgba(255,255,255,0.35));
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -90,13 +138,13 @@
   font-family: 'IBM Plex Mono', monospace;
   font-size: 32px;
   font-weight: 300;
-  color: #e8e8f0;
+  color: var(--text-primary, #e8e8f0);
 }
 
 .focusGoal {
   font-size: 12px;
   font-weight: 500;
-  color: rgba(255,255,255,0.55);
+  color: var(--text-secondary, rgba(255,255,255,0.55));
 }
 
 .focusMeta {
@@ -130,9 +178,9 @@
 
 .actionBtn {
   flex: 1;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  color: #e8e8f0;
+  background: var(--control-bg, rgba(255,255,255,0.06));
+  border: 1px solid var(--control-border, rgba(255,255,255,0.1));
+  color: var(--text-primary, #e8e8f0);
   padding: 6px 10px;
   border-radius: 6px;
   font-size: 10px;
@@ -142,8 +190,8 @@
 }
 
 .actionBtn:hover {
-  background: rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.2);
+  background: var(--control-bg-hover, rgba(255,255,255,0.1));
+  border-color: var(--control-border);
 }
 
 .cancelBtn {
@@ -168,7 +216,7 @@
 .idleText {
   font-size: 11px;
   font-weight: 600;
-  color: rgba(255,255,255,0.3);
+  color: var(--text-muted, rgba(255,255,255,0.3));
 }
 
 .tipText {

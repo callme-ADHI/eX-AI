@@ -142,7 +142,7 @@ export default function IndexSiteButton({ onIndexChanged }: IndexSiteButtonProps
           padding: '6px 8px',
           background: 'none',
           border: 'none',
-          color: '#e8e8f0',
+          color: 'var(--text-primary, #e8e8f0)',
           cursor: 'pointer',
           borderRadius: '4px',
           fontSize: '11px',

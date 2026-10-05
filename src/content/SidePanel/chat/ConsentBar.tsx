@@ -34,14 +34,14 @@ export default function ConsentBar({
         padding: '10px 12px',
         marginBottom: '8px',
         fontSize: '12px',
-        color: '#e8e8f0',
+        color: 'var(--text-primary, #e8e8f0)',
       }}
     >
       <div style={{ marginBottom: '6px', fontWeight: 600 }}>
         {isSensitive ? '⚠️ Sensitive Page Detected' : '🌐 Share Page Context?'}
       </div>
 
-      <div style={{ fontSize: '11px', color: 'rgba(232, 232, 240, 0.75)', marginBottom: '8px', lineHeight: 1.4 }}>
+      <div style={{ fontSize: '11px', color: 'var(--text-secondary, rgba(232, 232, 240, 0.75))', marginBottom: '8px', lineHeight: 1.4 }}>
         {customMessage || (
           <>
             This sends the visible text of this page, its structure and its links to NVIDIA&apos;s API to answer your question.

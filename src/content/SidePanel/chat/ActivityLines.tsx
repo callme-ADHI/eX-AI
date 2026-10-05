@@ -14,13 +14,13 @@ export default function ActivityLines({ items, isStreaming = false }: ActivityLi
   return (
     <div
       style={{
-        background: 'rgba(255, 255, 255, 0.03)',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
+        background: 'var(--control-bg, rgba(255, 255, 255, 0.03))',
+        border: '1px solid var(--control-border, rgba(255, 255, 255, 0.08))',
         borderRadius: '6px',
         padding: '6px 10px',
         marginBottom: '8px',
         fontSize: '11px',
-        color: 'rgba(232, 232, 240, 0.75)',
+        color: 'var(--text-secondary, rgba(232, 232, 240, 0.75))',
       }}
     >
       <div
@@ -33,7 +33,7 @@ export default function ActivityLines({ items, isStreaming = false }: ActivityLi
         }}
         onClick={() => setCollapsed(!collapsed)}
       >
-        <span style={{ fontWeight: 600, color: '#7094ff', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <span style={{ fontWeight: 600, color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '6px' }}>
           {isStreaming ? (
             <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>🔄</span>
           ) : (
@@ -41,7 +41,7 @@ export default function ActivityLines({ items, isStreaming = false }: ActivityLi
           )}
           <span>Browsing activity ({items.length} {items.length === 1 ? 'step' : 'steps'})</span>
         </span>
-        <span style={{ fontSize: '10px', color: 'rgba(232, 232, 240, 0.4)' }}>
+        <span style={{ fontSize: '10px', color: 'var(--text-muted, rgba(232, 232, 240, 0.4))' }}>
           {collapsed ? '▾ Expand' : '▴ Collapse'}
         </span>
       </div>
