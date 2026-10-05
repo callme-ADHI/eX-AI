@@ -125,3 +125,15 @@ export function extractFromDocument(doc: Document, o: ExtractDocOptions): Extrac
     skippedFrames: ctx.skippedFrames, source, rendered: !looksShell,
   };
 }
+
+/**
+ * Visible text of one element, using the same walker as page extraction.
+ * No truncation — intended for label/question extraction in the autofill detector.
+ * @param el  The element to walk.
+ * @param live When true, uses checkVisibility to skip invisible nodes (default: true).
+ */
+export function extractElementText(el: Element, live = true): string {
+  const ctx: Ctx = { out: [], len: 0, live, skippedFrames: 0, visited: 0, hostToSkip: null };
+  walk(el, ctx);
+  return cleanText(ctx.out.join(''));
+}
