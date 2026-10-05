@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom & Auto-Advance Options — eX-AI Test Harness</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0b0c10; color: #e8e8f0; padding: 40px 20px; max-width: 680px; margin: 0 auto; line-height: 1.6; }
+    h1 { color: #66fcf1; }
+    .card { border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; margin-bottom: 24px; padding: 16px; background: #1f2833; }
+    .q-title { color: #66fcf1; font-weight: 600; margin-bottom: 12px; }
+    .option { padding: 10px 14px; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; margin: 6px 0; cursor: pointer; background: rgba(0,0,0,0.2); }
+    .option.selected { border-color: #00ffd2; background: rgba(0,255,210,0.15); color: #fff; font-weight: 600; }
+    .button-opt { display: block; width: 100%; text-align: left; padding: 10px 14px; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; margin: 6px 0; cursor: pointer; background: rgba(0,0,0,0.2); color: #e8e8f0; }
+    .button-opt.selected { border-color: #2452ff; background: rgba(36,82,255,0.25); color: #fff; font-weight: 600; }
+    .btn-row { display: flex; gap: 12px; margin-top: 32px; }
+    button { padding: 10px 20px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+    .btn-submit { background: #ff453a; color: white; }
+    .btn-next { background: #2452ff; color: white; }
+    #banner-submitted { display: none; background: #ff453a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+    #banner-next { display: none; background: #ff9f0a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div id="banner-submitted">🚨 FORM SUBMITTED! (Submission occurred)</div>
+  <div id="banner-next">⚠️ NEXT TRIGGERED! (Page advanced)</div>
+
+  <h1>3. Custom Heuristic & Auto-Advance Options</h1>
+  <p><a href="index.html" style="color: #66fcf1;">← Back to harness index</a></p>
+
+  <!-- Variant 1: div.option with selected class -->
+  <div class="card" id="q1-card">
+    <div class="q-title">Question 1: Which of the following is a non-relational database?</div>
+    <div class="option" tabindex="0">A. PostgreSQL</div>
+    <div class="option" tabindex="0">B. MySQL</div>
+    <div class="option" tabindex="0">C. MongoDB</div>
+    <div class="option" tabindex="0">D. Oracle</div>
+  </div>
+
+  <!-- Variant 2: <button type="button"> options -->
+  <div class="card" id="q2-card">
+    <div class="q-title">Question 2: What is the main purpose of an index in SQL?</div>
+    <button type="button" class="button-opt">A. Enforce foreign keys</button>
+    <button type="button" class="button-opt">B. Speed up data retrieval</button>
+    <button type="button" class="button-opt">C. Compress table disk storage</button>
+    <button type="button" class="button-opt">D. Encrypt user passwords</button>
+  </div>
+
+  <!-- Variant 3: Auto-advance on option click (demonstrates the documented limitation) -->
+  <div class="card" id="q3-card">
+    <div class="q-title">Question 3 (Page with Auto-Advance script): Select an option:</div>
+    <p style="font-size: 11px; color: #ff9f0a; margin: 4px 0 8px;">
+      Notice: Clicking any option below runs the page's own auto-advance handler.
+    </p>
+    <div class="option auto-advance" tabindex="0">Option 1: Proceed immediately</div>
+    <div class="option auto-advance" tabindex="0">Option 2: Advance test</div>
+  </div>
+
+  <div class="btn-row">
+    <button type="button" class="btn-next" onclick="window.__next = true; document.getElementById('banner-next').style.display = 'block';">
+      Next
+    </button>
+    <button type="button" class="btn-submit" onclick="window.__submitted = true; document.getElementById('banner-submitted').style.display = 'block';">
+      Submit
+    </button>
+  </div>
+
+  <script>
+    window.__submitted = false;
+    window.__next = false;
+
+    // Variant 1 div options
+    const q1Opts = document.querySelectorAll('#q1-card .option');
+    q1Opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        q1Opts.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+      });
+    });
+
+    // Variant 2 button options
+    const q2Opts = document.querySelectorAll('#q2-card .button-opt');
+    q2Opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        q2Opts.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+      });
+    });
+
+    // Variant 3 auto-advancing options
+    const q3Opts = document.querySelectorAll('#q3-card .auto-advance');
+    q3Opts.forEach(opt => {
+      opt.addEventListener('click', () => {
+        q3Opts.forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        window.__next = true;
+        document.getElementById('banner-next').style.display = 'block';
+      });
+    });
+  </script>
+</body>
+</html>

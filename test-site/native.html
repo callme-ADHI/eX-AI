@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Native Form Controls — eX-AI Test Harness</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0b0c10; color: #e8e8f0; padding: 40px 20px; max-width: 680px; margin: 0 auto; line-height: 1.6; }
+    h1 { color: #66fcf1; }
+    fieldset { border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; margin-bottom: 24px; padding: 16px; background: #1f2833; }
+    legend { color: #66fcf1; font-weight: 600; padding: 0 8px; }
+    label { display: block; margin: 8px 0; cursor: pointer; }
+    input[type="text"], textarea, select { width: 100%; box-sizing: border-box; background: #0b0c10; border: 1px solid #45a29e; color: #fff; padding: 8px 12px; border-radius: 4px; margin-top: 6px; }
+    .btn-row { display: flex; gap: 12px; margin-top: 32px; }
+    button { padding: 10px 20px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+    .btn-submit { background: #ff453a; color: white; }
+    .btn-next { background: #2452ff; color: white; }
+    #banner-submitted { display: none; background: #ff453a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+    #banner-next { display: none; background: #ff9f0a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div id="banner-submitted">🚨 FORM SUBMITTED! (Submission occurred)</div>
+  <div id="banner-next">⚠️ NEXT TRIGGERED! (Page advanced)</div>
+
+  <h1>1. Native Form Controls</h1>
+  <p><a href="index.html" style="color: #66fcf1;">← Back to harness index</a></p>
+
+  <form id="test-form" onsubmit="event.preventDefault(); window.__submitted = true; document.getElementById('banner-submitted').style.display = 'block';">
+    <!-- MCQ 1 -->
+    <fieldset>
+      <legend>Question 1: What is the time complexity of binary search?</legend>
+      <label><input type="radio" name="q1" value="A"> A. O(n)</label>
+      <label><input type="radio" name="q1" value="B"> B. O(log n)</label>
+      <label><input type="radio" name="q1" value="C"> C. O(n log n)</label>
+      <label><input type="radio" name="q1" value="D"> D. O(1)</label>
+    </fieldset>
+
+    <!-- MCQ 2 -->
+    <fieldset>
+      <legend>Question 2: Which data structure uses FIFO (First In First Out)?</legend>
+      <label><input type="radio" name="q2" value="A"> A. Stack</label>
+      <label><input type="radio" name="q2" value="B"> B. Queue</label>
+      <label><input type="radio" name="q2" value="C"> C. Tree</label>
+      <label><input type="radio" name="q2" value="D"> D. Heap</label>
+    </fieldset>
+
+    <!-- MCQ 3 -->
+    <fieldset>
+      <legend>Question 3: In HTTP, which status code represents "Not Found"?</legend>
+      <label><input type="radio" name="q3" value="A"> A. 200</label>
+      <label><input type="radio" name="q3" value="B"> B. 301</label>
+      <label><input type="radio" name="q3" value="C"> C. 404</label>
+      <label><input type="radio" name="q3" value="D"> D. 500</label>
+    </fieldset>
+
+    <!-- Multi-select Checkboxes -->
+    <fieldset>
+      <legend>Question 4: Which of the following are prime numbers? (Select all that apply)</legend>
+      <label><input type="checkbox" name="q4" value="2"> A. 2</label>
+      <label><input type="checkbox" name="q4" value="3"> B. 3</label>
+      <label><input type="checkbox" name="q4" value="4"> C. 4</label>
+      <label><input type="checkbox" name="q4" value="5"> D. 5</label>
+    </fieldset>
+
+    <!-- Text Input -->
+    <fieldset>
+      <legend>Question 5: Short Answer</legend>
+      <label for="q5">What is the capital city of France?</label>
+      <input type="text" id="q5" name="q5" placeholder="Enter city name">
+    </fieldset>
+
+    <!-- Long Textarea -->
+    <fieldset>
+      <legend>Question 6: Long Answer</legend>
+      <label for="q6">Explain polymorphism in object-oriented programming:</label>
+      <textarea id="q6" name="q6" rows="4" placeholder="Type your explanation here..."></textarea>
+    </fieldset>
+
+    <!-- Select Dropdown -->
+    <fieldset>
+      <legend>Question 7: Dropdown Selection</legend>
+      <label for="q7">Select primary programming language:</label>
+      <select id="q7" name="q7">
+        <option value="">-- Choose language --</option>
+        <option value="python">Python</option>
+        <option value="javascript">JavaScript</option>
+        <option value="cpp">C++</option>
+        <option value="java">Java</option>
+      </select>
+    </fieldset>
+
+    <div class="btn-row">
+      <button type="button" class="btn-next" id="btn-next" onclick="window.__next = true; document.getElementById('banner-next').style.display = 'block';">
+        Next Question
+      </button>
+      <button type="submit" class="btn-submit" id="btn-submit">
+        Submit Assessment
+      </button>
+    </div>
+  </form>
+
+  <script>
+    window.__submitted = false;
+    window.__next = false;
+  </script>
+</body>
+</html>

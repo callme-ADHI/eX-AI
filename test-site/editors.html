@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Code Editors — eX-AI Test Harness</title>
+  <!-- Ace Editor -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.32.7/ace.js"></script>
+  <!-- CodeMirror 5 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0b0c10; color: #e8e8f0; padding: 40px 20px; max-width: 760px; margin: 0 auto; line-height: 1.6; }
+    h1 { color: #66fcf1; }
+    .card { border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; margin-bottom: 24px; padding: 16px; background: #1f2833; }
+    .editor-box { height: 180px; width: 100%; border-radius: 4px; overflow: hidden; border: 1px solid rgba(255,255,255,0.2); }
+    select { background: #0b0c10; border: 1px solid #45a29e; color: #fff; padding: 6px 12px; border-radius: 4px; margin-bottom: 12px; }
+    .btn-row { display: flex; gap: 12px; margin-top: 32px; }
+    button { padding: 10px 20px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+    .btn-submit { background: #ff453a; color: white; }
+    .btn-next { background: #2452ff; color: white; }
+    #banner-submitted { display: none; background: #ff453a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+    #banner-next { display: none; background: #ff9f0a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div id="banner-submitted">🚨 FORM SUBMITTED! (Submission occurred)</div>
+  <div id="banner-next">⚠️ NEXT TRIGGERED! (Page advanced)</div>
+
+  <h1>5. Code Editors Integration</h1>
+  <p><a href="index.html" style="color: #66fcf1;">← Back to harness index</a></p>
+
+  <label for="lang-select">Language: </label>
+  <select id="lang-select">
+    <option value="python">Python</option>
+    <option value="java">Java</option>
+    <option value="cpp">C++</option>
+    <option value="javascript">JavaScript</option>
+  </select>
+
+  <!-- 1. Monaco Editor -->
+  <div class="card">
+    <h3 style="color: #66fcf1; margin-top: 0;">1. Monaco Editor</h3>
+    <div id="monaco-container" class="editor-box"></div>
+  </div>
+
+  <!-- 2. CodeMirror 5 -->
+  <div class="card">
+    <h3 style="color: #66fcf1; margin-top: 0;">2. CodeMirror 5</h3>
+    <div id="cm5-container"></div>
+  </div>
+
+  <!-- 3. Ace Editor -->
+  <div class="card">
+    <h3 style="color: #66fcf1; margin-top: 0;">3. Ace Editor</h3>
+    <div id="ace-container" class="editor-box"></div>
+  </div>
+
+  <!-- 4. Textarea Code Editor -->
+  <div class="card">
+    <h3 style="color: #66fcf1; margin-top: 0;">4. Textarea Code Editor</h3>
+    <textarea class="code-editor" style="width: 100%; height: 140px; font-family: monospace; background: #000; color: #00ffd2; padding: 10px; box-sizing: border-box; border-radius: 4px;"></textarea>
+  </div>
+
+  <!-- 5. ContentEditable Code Editor -->
+  <div class="card">
+    <h3 style="color: #66fcf1; margin-top: 0;">5. ContentEditable Code Editor</h3>
+    <div class="code-editor" contenteditable="true" style="width: 100%; min-height: 120px; font-family: monospace; background: #000; color: #00ffd2; padding: 10px; box-sizing: border-box; border-radius: 4px; white-space: pre-wrap;"></div>
+  </div>
+
+  <div class="btn-row">
+    <button type="button" class="btn-next" onclick="window.__next = true; document.getElementById('banner-next').style.display = 'block';">Next</button>
+    <button type="button" class="btn-submit" onclick="window.__submitted = true; document.getElementById('banner-submitted').style.display = 'block';">Submit</button>
+  </div>
+
+  <!-- Monaco loader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+  <script>
+    window.__submitted = false;
+    window.__next = false;
+
+    // Monaco initialization via RequireJS
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' } });
+    require(['vs/editor/editor.main'], function() {
+      window.monacoEditor = monaco.editor.create(document.getElementById('monaco-container'), {
+        value: '# Write Python solution here\ndef solution():\n    pass\n',
+        language: 'python',
+        theme: 'vs-dark',
+        automaticLayout: true
+      });
+    });
+
+    // CodeMirror 5 initialization
+    window.cm5Editor = CodeMirror(document.getElementById('cm5-container'), {
+      value: '# CodeMirror 5 code\n',
+      mode: 'python',
+      lineNumbers: true
+    });
+
+    // Ace initialization
+    window.aceEditor = ace.edit('ace-container');
+    window.aceEditor.setTheme('ace/theme/monokai');
+    window.aceEditor.session.setMode('ace/mode/python');
+    window.aceEditor.setValue('# Ace code editor\n', 1);
+  </script>
+</body>
+</html>

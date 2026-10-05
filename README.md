@@ -77,6 +77,17 @@ Designed specifically for students, software engineers, and competitive programm
 - **Automatic Fallback Chain**: Gracefully cascades through your preferred backup models on HTTP 403, 404, 5xx, or 45s silence timeouts.
 - **Port Keep-Alive Pings**: Continuous background ping every 20s prevents Chrome service worker termination during extended reasoning and tool execution phases.
 
+### 4. 🧪 Autofill for Test Sites (QA & Developer Harness)
+- **Strictly for Authorized Testing**: A dedicated QA tool for developers building or testing assessment platforms.
+- **Never Submits**: Only clicks detected radio/checkbox options; cancels any form submit events; never triggers `form.submit()`, navigation links, or action buttons.
+- **No Human Mimicry**: Operates with clean, deterministic, fixed spacing (40–500ms) to allow page handlers to settle. Zero randomized delays, zero mouse simulation, zero evasion tricks.
+- **Robust Field Detection**: Scans native form controls (`<input>`, `<select>`, `<textarea>`), ARIA semantics (`role="radiogroup"`, `role="listbox"`), custom options, and code editors (Monaco, CodeMirror 5 & 6, Ace, contenteditable).
+- **Element Picker**: Interactive crosshair picker allows targeting tricky custom components with automatic parent question scoping.
+- **Dual Mode Proposals**:
+  - **Deterministic QA Fill**: Fill first, last, random, placeholder, or stress-test long answers without AI.
+  - **AI Model Proposals**: Batches questions (up to 8 non-code fields per request, single request per code field) to NVIDIA NIM with schema validation and strict JSON extraction.
+- **Full Transparency & Undo**: Displays a modal confirmation dialog before making any DOM changes. Shows a post-fill summary and provides an Undo button (for supported native text/select/checkbox controls).
+
 ---
 
 ## 🔒 Security Architecture
@@ -95,6 +106,11 @@ Designed specifically for students, software engineers, and competitive programm
 | 10 | **Host Page Panel Spoofing / Tampering** | Content script runs inside a closed Shadow DOM (`{ mode: 'closed' }`); all extension communications use internal `chrome.runtime.Port`. |
 | 11 | **Runaway Tool Loops & Rate Limit Burn** | Max 6 tool calls per turn, max 3 rounds (`LIMITS.maxToolRounds`), 80,000 characters per turn budget, token bucket rate limiter. |
 | 12 | **Script Execution in Fetched HTML** | `DOMParser` parses HTML in an inert sandbox where scripts cannot execute; `<script>`, `<style>`, `<noscript>`, `<template>` nodes removed before extraction. |
+| 13 | **Autofill on Unauthorized / Proctored Sites** | Built-in immutable hard-deny list (`HARD_DENY_HOSTS` in `autofillPolicy.ts`) blocks assessment & proctoring platforms (HackerRank, Mettl, etc.). Custom sites require typing an exact authorization phrase. |
+| 14 | **Accidental or Malicious Form Submission** | Action control detection (`isActionControl` in `guards.ts`), `clickAllowed` guard, and event capture blocker (`withSubmitBlocked`). Submit buttons are never clicked. |
+| 15 | **Sensitive & Personal Input Interception** | Autofill scanner rejects passwords, credit cards, SSN, OTP, emails, telephone, and sensitive autocomplete attributes. |
+| 16 | **MAIN-World Code Injection** | Temporary random one-time cryptographic token (`crypto.getRandomValues`), executed via one-shot `chrome.scripting.executeScript` without persistent globals or bridges. Token attribute removed in `finally`. |
+| 17 | **Autofill Data Leakage & Retention** | Never persists questions, proposed answers, or code to storage. The audit log (`audit.ts`) records operational counts only. |
 
 ---
 
@@ -130,7 +146,7 @@ npm ci
 # 3. Build production extension bundles
 npm run build
 
-# 4. Verify test suite (84 tests passing)
+# 4. Verify test suite (129 tests passing)
 npm run test
 ```
 

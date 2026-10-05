@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>React 18 Controlled Inputs — eX-AI Test Harness</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0b0c10; color: #e8e8f0; padding: 40px 20px; max-width: 680px; margin: 0 auto; line-height: 1.6; }
+    h1 { color: #66fcf1; }
+    .card { border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; margin-bottom: 24px; padding: 16px; background: #1f2833; }
+    label { display: block; margin: 8px 0; cursor: pointer; }
+    input[type="text"], textarea, select { width: 100%; box-sizing: border-box; background: #0b0c10; border: 1px solid #45a29e; color: #fff; padding: 8px 12px; border-radius: 4px; margin-top: 6px; }
+    pre { background: #000; padding: 12px; border-radius: 6px; color: #00ffd2; font-family: monospace; font-size: 12px; overflow-x: auto; }
+    .btn-row { display: flex; gap: 12px; margin-top: 24px; }
+    button { padding: 10px 20px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+    .btn-submit { background: #ff453a; color: white; }
+    .btn-next { background: #2452ff; color: white; }
+    #banner-submitted { display: none; background: #ff453a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+    #banner-next { display: none; background: #ff9f0a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div id="banner-submitted">🚨 FORM SUBMITTED! (Submission occurred)</div>
+  <div id="banner-next">⚠️ NEXT TRIGGERED! (Page advanced)</div>
+
+  <h1>4. React 18 Controlled Inputs</h1>
+  <p><a href="index.html" style="color: #66fcf1;">← Back to harness index</a></p>
+
+  <div id="react-root"></div>
+
+  <script>
+    window.__submitted = false;
+    window.__next = false;
+
+    const { useState, createElement: h } = React;
+
+    function App() {
+      const [radioVal, setRadioVal] = useState('');
+      const [textVal, setTextVal] = useState('');
+      const [areaVal, setAreaVal] = useState('');
+      const [selectVal, setSelectVal] = useState('');
+
+      return h('form', {
+        onSubmit: (e) => {
+          e.preventDefault();
+          window.__submitted = true;
+          document.getElementById('banner-submitted').style.display = 'block';
+        }
+      }, [
+        h('div', { key: 'c1', className: 'card' }, [
+          h('h3', { key: 't1', style: { color: '#66fcf1', margin: '0 0 10px' } }, 'Question 1: React State Radio'),
+          h('label', { key: 'r1' }, [
+            h('input', { type: 'radio', name: 'react-radio', value: 'optA', checked: radioVal === 'optA', onChange: (e) => setRadioVal(e.target.value) }),
+            ' Option A: useState'
+          ]),
+          h('label', { key: 'r2' }, [
+            h('input', { type: 'radio', name: 'react-radio', value: 'optB', checked: radioVal === 'optB', onChange: (e) => setRadioVal(e.target.value) }),
+            ' Option B: useEffect'
+          ]),
+          h('label', { key: 'r3' }, [
+            h('input', { type: 'radio', name: 'react-radio', value: 'optC', checked: radioVal === 'optC', onChange: (e) => setRadioVal(e.target.value) }),
+            ' Option C: useMemo'
+          ])
+        ]),
+
+        h('div', { key: 'c2', className: 'card' }, [
+          h('label', { key: 'l2', htmlFor: 'react-text', style: { fontWeight: 600, color: '#66fcf1' } }, 'Question 2: Controlled Input'),
+          h('input', { key: 'i2', id: 'react-text', type: 'text', value: textVal, onChange: (e) => setTextVal(e.target.value), placeholder: 'Type here...' })
+        ]),
+
+        h('div', { key: 'c3', className: 'card' }, [
+          h('label', { key: 'l3', htmlFor: 'react-area', style: { fontWeight: 600, color: '#66fcf1' } }, 'Question 3: Controlled Textarea'),
+          h('textarea', { key: 'i3', id: 'react-area', rows: 3, value: areaVal, onChange: (e) => setAreaVal(e.target.value), placeholder: 'Paragraph response...' })
+        ]),
+
+        h('div', { key: 'c4', className: 'card' }, [
+          h('label', { key: 'l4', htmlFor: 'react-select', style: { fontWeight: 600, color: '#66fcf1' } }, 'Question 4: Controlled Select'),
+          h('select', { key: 'i4', id: 'react-select', value: selectVal, onChange: (e) => setSelectVal(e.target.value) }, [
+            h('option', { key: 's0', value: '' }, '-- Select framework --'),
+            h('option', { key: 's1', value: 'Next.js' }, 'Next.js'),
+            h('option', { key: 's2', value: 'Remix' }, 'Remix'),
+            h('option', { key: 's3', value: 'Vite' }, 'Vite')
+          ])
+        ]),
+
+        h('div', { key: 'c5', className: 'card' }, [
+          h('h4', { key: 'st', style: { margin: '0 0 6px', color: '#8892b0' } }, 'Live React State Mirror (proves setNativeValue works):'),
+          h('pre', { key: 'pr' }, JSON.stringify({ radio: radioVal, text: textVal, area: areaVal, select: selectVal }, null, 2))
+        ]),
+
+        h('div', { key: 'btns', className: 'btn-row' }, [
+          h('button', {
+            key: 'b-next',
+            type: 'button',
+            className: 'btn-next',
+            onClick: () => {
+              window.__next = true;
+              document.getElementById('banner-next').style.display = 'block';
+            }
+          }, 'Next'),
+          h('button', {
+            key: 'b-sub',
+            type: 'submit',
+            className: 'btn-submit'
+          }, 'Submit Attempt')
+        ])
+      ]);
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('react-root'));
+    root.render(h(App));
+  </script>
+</body>
+</html>

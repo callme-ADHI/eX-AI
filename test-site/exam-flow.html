@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Assessment Exam Flow — eX-AI Test Harness</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0b0c10; color: #e8e8f0; padding: 40px 20px; max-width: 720px; margin: 0 auto; line-height: 1.6; }
+    h1 { color: #66fcf1; }
+    fieldset, .card { border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; margin-bottom: 24px; padding: 18px; background: #1f2833; }
+    legend { color: #66fcf1; font-weight: 600; padding: 0 8px; }
+    label { display: block; margin: 8px 0; cursor: pointer; }
+    select { background: #0b0c10; border: 1px solid #45a29e; color: #fff; padding: 6px 12px; border-radius: 4px; margin-bottom: 12px; }
+    .code-area { width: 100%; height: 160px; font-family: monospace; background: #000; color: #00ffd2; padding: 10px; box-sizing: border-box; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2); }
+    .btn-row { display: flex; gap: 12px; margin-top: 32px; }
+    button { padding: 12px 24px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+    .btn-submit { background: #ff453a; color: white; }
+    .btn-next { background: #2452ff; color: white; }
+    #banner-submitted { display: none; background: #ff453a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+    #banner-next { display: none; background: #ff9f0a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div id="banner-submitted">🚨 FORM SUBMITTED! (Submission occurred)</div>
+  <div id="banner-next">⚠️ NEXT TRIGGERED! (Page advanced)</div>
+
+  <h1>6. Mini Assessment Exam Flow</h1>
+  <p><a href="index.html" style="color: #66fcf1;">← Back to harness index</a></p>
+
+  <form id="exam-form" onsubmit="event.preventDefault(); window.__submitted = true; document.getElementById('banner-submitted').style.display = 'block';">
+    <!-- MCQ 1 -->
+    <fieldset>
+      <legend>Question 1: What does ACID stand for in databases?</legend>
+      <label><input type="radio" name="eq1" value="A"> A. Atomicity, Consistency, Isolation, Durability</label>
+      <label><input type="radio" name="eq1" value="B"> B. Accuracy, Completeness, Integrity, Dependability</label>
+      <label><input type="radio" name="eq1" value="C"> C. Asynchronous, Cached, Indexed, Distributed</label>
+      <label><input type="radio" name="eq1" value="D"> D. Allocation, Clustering, Indexing, Deletion</label>
+    </fieldset>
+
+    <!-- MCQ 2 -->
+    <fieldset>
+      <legend>Question 2: Which sorting algorithm has an average runtime of O(n log n)?</legend>
+      <label><input type="radio" name="eq2" value="A"> A. Bubble Sort</label>
+      <label><input type="radio" name="eq2" value="B"> B. Insertion Sort</label>
+      <label><input type="radio" name="eq2" value="C"> C. Merge Sort</label>
+      <label><input type="radio" name="eq2" value="D"> D. Selection Sort</label>
+    </fieldset>
+
+    <!-- MCQ 3 -->
+    <fieldset>
+      <legend>Question 3: What does the 'git merge --squash' command do?</legend>
+      <label><input type="radio" name="eq3" value="A"> A. Deletes old branches after merging</label>
+      <label><input type="radio" name="eq3" value="B"> B. Combines all changes from the feature branch into a single commit</label>
+      <label><input type="radio" name="eq3" value="C"> C. Fast-forwards without history</label>
+      <label><input type="radio" name="eq3" value="D"> D. Reverts merge conflicts automatically</label>
+    </fieldset>
+
+    <!-- Question 4: Coding Question -->
+    <div class="card">
+      <h3 style="color: #66fcf1; margin-top: 0;">Question 4 (Coding): Two Sum Problem</h3>
+      <p style="font-size: 13px; color: #c5c6c7;">
+        Given an array of integers <code>nums</code> and an integer <code>target</code>, return indices of the two numbers such that they add up to <code>target</code>.
+      </p>
+
+      <label for="code-lang">Language:</label>
+      <select id="code-lang" name="language">
+        <option value="python">Python</option>
+        <option value="java">Java</option>
+        <option value="cpp">C++</option>
+        <option value="javascript">JavaScript</option>
+      </select>
+
+      <textarea id="code-solution" class="code-area" name="solution" placeholder="# Write your solution here..."></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button type="button" class="btn-next" onclick="window.__next = true; document.getElementById('banner-next').style.display = 'block';">
+        Next Question
+      </button>
+      <button type="submit" class="btn-submit">
+        Submit Entire Exam
+      </button>
+    </div>
+  </form>
+
+  <script>
+    window.__submitted = false;
+    window.__next = false;
+  </script>
+</body>
+</html>

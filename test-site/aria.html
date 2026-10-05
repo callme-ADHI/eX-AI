@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ARIA Semantic Controls — eX-AI Test Harness</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background: #0b0c10; color: #e8e8f0; padding: 40px 20px; max-width: 680px; margin: 0 auto; line-height: 1.6; }
+    h1 { color: #66fcf1; }
+    .question-block { border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; margin-bottom: 24px; padding: 16px; background: #1f2833; }
+    .q-title { color: #66fcf1; font-weight: 600; margin-bottom: 12px; }
+    .aria-opt { padding: 10px 14px; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; margin: 6px 0; cursor: pointer; background: rgba(0,0,0,0.2); transition: all 0.15s ease; }
+    .aria-opt[aria-checked="true"], .aria-opt[aria-selected="true"] { border-color: #00ffd2; background: rgba(0,255,210,0.15); color: #fff; font-weight: 600; }
+    .btn-row { display: flex; gap: 12px; margin-top: 32px; }
+    button { padding: 10px 20px; border-radius: 6px; border: none; font-weight: bold; cursor: pointer; }
+    .btn-submit { background: #ff453a; color: white; }
+    .btn-next { background: #2452ff; color: white; }
+    #banner-submitted { display: none; background: #ff453a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+    #banner-next { display: none; background: #ff9f0a; color: #fff; padding: 12px; font-weight: bold; text-align: center; border-radius: 6px; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div id="banner-submitted">🚨 FORM SUBMITTED! (Submission occurred)</div>
+  <div id="banner-next">⚠️ NEXT TRIGGERED! (Page advanced)</div>
+
+  <h1>2. ARIA Semantic Controls</h1>
+  <p><a href="index.html" style="color: #66fcf1;">← Back to harness index</a></p>
+
+  <!-- ARIA Radiogroup 1 -->
+  <div class="question-block" role="radiogroup" aria-labelledby="q1-title">
+    <div id="q1-title" class="q-title">Question 1: Which protocol operates on TCP port 443?</div>
+    <div class="aria-opt" role="radio" aria-checked="false" tabindex="0">HTTP</div>
+    <div class="aria-opt" role="radio" aria-checked="false" tabindex="0">HTTPS</div>
+    <div class="aria-opt" role="radio" aria-checked="false" tabindex="0">SSH</div>
+    <div class="aria-opt" role="radio" aria-checked="false" tabindex="0">FTP</div>
+  </div>
+
+  <!-- ARIA Radiogroup 2 -->
+  <div class="question-block" role="radiogroup" aria-labelledby="q2-title">
+    <div id="q2-title" class="q-title">Question 2: What is the default port for DNS queries?</div>
+    <div class="aria-opt" role="radio" aria-checked="false" tabindex="0">22</div>
+    <div class="aria-opt" role="radio" aria-checked="false" tabindex="0">53</div>
+    <div class="aria-opt" role="radio" aria-checked="false" tabindex="0">80</div>
+    <div class="aria-opt" role="radio" aria-checked="false" tabindex="0">8080</div>
+  </div>
+
+  <!-- ARIA Listbox -->
+  <div class="question-block">
+    <div id="q3-title" class="q-title">Question 3: Select deployment platform:</div>
+    <div role="listbox" aria-labelledby="q3-title">
+      <div class="aria-opt" role="option" aria-selected="false" tabindex="0">Kubernetes</div>
+      <div class="aria-opt" role="option" aria-selected="false" tabindex="0">Docker Swarm</div>
+      <div class="aria-opt" role="option" aria-selected="false" tabindex="0">AWS ECS</div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button type="button" class="btn-next" onclick="window.__next = true; document.getElementById('banner-next').style.display = 'block';">
+      Next
+    </button>
+    <button type="button" class="btn-submit" onclick="window.__submitted = true; document.getElementById('banner-submitted').style.display = 'block';">
+      Submit
+    </button>
+  </div>
+
+  <script>
+    window.__submitted = false;
+    window.__next = false;
+
+    // Toggle aria-checked on radios
+    document.querySelectorAll('[role="radiogroup"]').forEach(group => {
+      const radios = group.querySelectorAll('[role="radio"]');
+      radios.forEach(radio => {
+        radio.addEventListener('click', () => {
+          radios.forEach(r => r.setAttribute('aria-checked', 'false'));
+          radio.setAttribute('aria-checked', 'true');
+        });
+      });
+    });
+
+    // Toggle aria-selected on options
+    document.querySelectorAll('[role="listbox"]').forEach(box => {
+      const options = box.querySelectorAll('[role="option"]');
+      options.forEach(opt => {
+        opt.addEventListener('click', () => {
+          options.forEach(o => o.setAttribute('aria-selected', 'false'));
+          opt.setAttribute('aria-selected', 'true');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

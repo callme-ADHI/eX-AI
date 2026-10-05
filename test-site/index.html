@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eX-AI Autofill Test Harness</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #0b0c10;
+      color: #c5c6c7;
+      padding: 40px 20px;
+      max-width: 720px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+    h1 { color: #66fcf1; margin-bottom: 8px; }
+    p.lead { color: #8892b0; margin-bottom: 24px; font-size: 15px; }
+    .card {
+      background: #1f2833;
+      border: 1px solid #45a29e;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: #66fcf1;
+    }
+    .card h2 { margin: 0 0 8px; font-size: 18px; }
+    .card h2 a { color: #66fcf1; text-decoration: none; }
+    .card h2 a:hover { text-decoration: underline; }
+    .card p { margin: 0; font-size: 13px; color: #c5c6c7; }
+    .banner {
+      background: rgba(102, 252, 241, 0.1);
+      border-left: 4px solid #66fcf1;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 eX-AI Autofill Test Harness</h1>
+  <p class="lead">Legitimate test ground for the eX-AI QA Autofill extension. Verify scanner accuracy, filler safety, and submission guards across various DOM frameworks.</p>
+
+  <div class="banner">
+    <strong>Safety Verification:</strong> Every test page has submit and navigation event listeners that record any trigger in <code>window.__submitted</code> and <code>window.__next</code>. The extension must never trigger them.
+  </div>
+
+  <div class="card">
+    <h2><a href="native.html">1. Native Form Controls (native.html)</a></h2>
+    <p>Tests fieldset/legend grouping, native radio inputs, multi-answer checkboxes, text input, textarea, and select dropdowns.</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="aria.html">2. ARIA Semantic Controls (aria.html)</a></h2>
+    <p>Custom component libraries using <code>role="radiogroup"</code>, <code>role="radio"</code>, <code>role="listbox"</code>, and <code>role="option"</code> with <code>aria-checked</code> and <code>aria-selected</code>.</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="custom.html">3. Heuristic / Custom Options (custom.html)</a></h2>
+    <p>Plain divs styled as clickable options (<code>div.option</code>), button options, and a demonstration of the auto-advancing option click limitation.</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="react.html">4. React Controlled Inputs (react.html)</a></h2>
+    <p>React 18 state-controlled inputs, radios, select, and textarea. Verifies that <code>setNativeValue</code> triggers React synthetic event state synchronization.</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="editors.html">5. Code Editors Integration (editors.html)</a></h2>
+    <p>Monaco, CodeMirror 5, CodeMirror 6, Ace Editor, plain textarea, contenteditable, and programming language select dropdown.</p>
+  </div>
+
+  <div class="card">
+    <h2><a href="exam-flow.html">6. Complete Exam Flow (exam-flow.html)</a></h2>
+    <p>Combined test flow: 3 MCQs, 1 coding editor question with language dropdown, Next button, and Submit attempt button.</p>
+  </div>
+</body>
+</html>
