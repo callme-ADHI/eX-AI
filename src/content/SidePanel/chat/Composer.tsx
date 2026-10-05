@@ -1,5 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import type { OCRMode } from '../../../shared/aiTypes';
+import type { Scope } from '../../pageText/types';
+import PageChip from './PageChip';
+import ConsentBar from './ConsentBar';
 import styles from './chat.module.css';
 
 export interface AttachmentChipData {
@@ -20,7 +23,33 @@ interface ComposerProps {
   attachment?: AttachmentChipData | null;
   onRemoveAttachment?: () => void;
   onRerunOcr?: (newMode: OCRMode) => void;
+  // Website Awareness
+  pageScope: 'off' | Scope;
+  onPageScopeChange: (scope: 'off' | Scope) => void;
+  consentPrompt?: {
+    origin: string;
+    isSensitive?: boolean;
+    customMessage?: string;
+    onAllowOnce: () => void;
+    onAllowAlways?: () => void;
+    onCancel: () => void;
+    allowAlwaysLabel?: string;
+    cancelLabel?: string;
+  } | null;
+  jsOnlyNotice?: boolean;
+  onDismissJsNotice?: () => void;
+  ownHost?: Element | null;
+  maxChars?: number;
+  keepQuery?: boolean;
 }
+
+const QUICK_ACTIONS = [
+  'Summarise this page',
+  'What does this site offer?',
+  'List pages linked from here',
+  'Find pricing / contact / about pages',
+  'Explain this question',
+];
 
 export default function Composer({
   input,
@@ -32,6 +61,14 @@ export default function Composer({
   attachment,
   onRemoveAttachment,
   onRerunOcr,
+  pageScope,
+  onPageScopeChange,
+  consentPrompt,
+  jsOnlyNotice,
+  onDismissJsNotice,
+  ownHost,
+  maxChars,
+  keepQuery,
 }: ComposerProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -43,6 +80,15 @@ export default function Composer({
   }, [input]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Ctrl+Shift+P / Cmd+Shift+P: toggle page scope
+    if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'p' || e.key === 'P')) {
+      e.preventDefault();
+      onPageScopeChange(
+        pageScope === 'off' ? 'main' : pageScope === 'main' ? 'page' : pageScope === 'page' ? 'selection' : 'off'
+      );
+      return;
+    }
+
     if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
       if (e.shiftKey) {
         // Shift + Enter: allow default newline insertion
@@ -68,64 +114,120 @@ export default function Composer({
 
   return (
     <div className={styles.composer}>
-      {/* Attachment Chip Area */}
-      {attachment && (
+      {/* Consent prompt replaces chip row while open */}
+      {consentPrompt ? (
+        <ConsentBar {...consentPrompt} />
+      ) : (
+        /* Chip Row: Page chip + OCR chip */
         <div className={styles.attachmentArea}>
-          <div className={styles.attachmentChip}>
-            {isOcrLoading ? (
-              <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#7094ff' }}>
-                <span>🔄</span>
-                <span>Reading screenshot...</span>
-              </span>
-            ) : attachment.empty ? (
-              <span style={{ color: '#f87171' }}>No text detected</span>
-            ) : (
-              <>
-                {attachment.thumbnail && (
-                  <img
-                    src={attachment.thumbnail}
-                    alt="Snippet thumbnail"
-                    className={styles.chipThumb}
-                  />
-                )}
-                {attachment.confidence !== undefined && (
-                  <span
-                    className={`${styles.confidenceBadge} ${getConfidenceClass(attachment.confidence)}`}
-                    title={
-                      attachment.confidence < 60
-                        ? 'Low confidence — please check the extracted text'
-                        : `${Math.round(attachment.confidence)}% OCR confidence`
-                    }
-                  >
-                    {Math.round(attachment.confidence)}%
-                    {attachment.confidence < 60 ? ' ⚠️' : ''}
-                  </span>
-                )}
-                {onRerunOcr && attachment.mode && (
-                  <button
-                    className={styles.actionBtnSmall}
-                    onClick={() =>
-                      onRerunOcr(attachment.mode === 'text' ? 'code' : 'text')
-                    }
-                    title={`Switch to ${attachment.mode === 'text' ? 'Code' : 'Text'} mode`}
-                  >
-                    {attachment.mode === 'text' ? 'Re-run as Code' : 'Re-run as Text'}
-                  </button>
-                )}
-              </>
-            )}
+          <PageChip
+            scope={pageScope}
+            onScopeChange={onPageScopeChange}
+            ownHost={ownHost}
+            maxChars={maxChars}
+            keepQuery={keepQuery}
+          />
 
-            {onRemoveAttachment && (
-              <button
-                className={styles.actionBtnSmall}
-                onClick={onRemoveAttachment}
-                title="Remove snippet"
-                style={{ marginLeft: '4px' }}
-              >
-                ✕
-              </button>
-            )}
-          </div>
+          {attachment && (
+            <div className={styles.attachmentChip}>
+              {isOcrLoading ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#7094ff' }}>
+                  <span>🔄</span>
+                  <span>Reading screenshot...</span>
+                </span>
+              ) : attachment.empty ? (
+                <span style={{ color: '#f87171' }}>No text detected</span>
+              ) : (
+                <>
+                  {attachment.thumbnail && (
+                    <img
+                      src={attachment.thumbnail}
+                      alt="Snippet thumbnail"
+                      className={styles.chipThumb}
+                    />
+                  )}
+                  {attachment.confidence !== undefined && (
+                    <span
+                      className={`${styles.confidenceBadge} ${getConfidenceClass(attachment.confidence)}`}
+                      title={
+                        attachment.confidence < 60
+                          ? 'Low confidence — please check the extracted text'
+                          : `${Math.round(attachment.confidence)}% OCR confidence`
+                      }
+                    >
+                      {Math.round(attachment.confidence)}%
+                      {attachment.confidence < 60 ? ' ⚠️' : ''}
+                    </span>
+                  )}
+                  {onRerunOcr && attachment.mode && (
+                    <button
+                      className={styles.actionBtnSmall}
+                      onClick={() =>
+                        onRerunOcr(attachment.mode === 'text' ? 'code' : 'text')
+                      }
+                      title={`Switch to ${attachment.mode === 'text' ? 'Code' : 'Text'} mode`}
+                    >
+                      {attachment.mode === 'text' ? 'Re-run as Code' : 'Re-run as Text'}
+                    </button>
+                  )}
+                </>
+              )}
+
+              {onRemoveAttachment && (
+                <button
+                  className={styles.actionBtnSmall}
+                  onClick={onRemoveAttachment}
+                  title="Remove snippet"
+                  style={{ marginLeft: '4px' }}
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* JavaScript-rendered page warning notice */}
+      {jsOnlyNotice && (
+        <div
+          style={{
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
+            borderRadius: '6px',
+            padding: '4px 8px',
+            fontSize: '11px',
+            color: '#f87171',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <span>This page is JavaScript-rendered and has little readable text. Use Snip for anything visual.</span>
+          {onDismissJsNotice && (
+            <button
+              onClick={onDismissJsNotice}
+              style={{ background: 'none', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: '12px' }}
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Quick actions row when page scope is active */}
+      {pageScope !== 'off' && !attachment && (
+        <div className={styles.quickActions}>
+          {QUICK_ACTIONS.map((action) => (
+            <button
+              key={action}
+              className={styles.quickActionBtn}
+              onClick={() => onChange(action)}
+              title="Click to fill composer"
+            >
+              {action}
+            </button>
+          ))}
         </div>
       )}
 
@@ -138,7 +240,13 @@ export default function Composer({
             value={input}
             onChange={(e) => onChange(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={isOcrLoading ? 'Extracting text...' : 'Ask a problem, paste code, or type here... (Enter to send)'}
+            placeholder={
+              isOcrLoading
+                ? 'Extracting text...'
+                : pageScope !== 'off'
+                ? `Ask about this page (${pageScope})... (Enter to send)`
+                : 'Ask a problem, paste code, or type here... (Enter to send)'
+            }
             rows={1}
             disabled={isOcrLoading}
           />

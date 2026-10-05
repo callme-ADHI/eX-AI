@@ -16,6 +16,7 @@ interface ChatPanelProps {
   onRerunOcr?: (mode: OCRMode) => void;
   initialInput?: string;
   onInputChange?: (val: string) => void;
+  ownHost?: Element | null;
 }
 
 export default function ChatPanel({
@@ -25,6 +26,7 @@ export default function ChatPanel({
   onRerunOcr,
   initialInput,
   onInputChange,
+  ownHost,
 }: ChatPanelProps) {
   const {
     session,
@@ -50,7 +52,12 @@ export default function ChatPanel({
     updateSettings,
     saveKey,
     clearKey,
-  } = useChat();
+    pageScope,
+    setPageScope,
+    consentPrompt,
+    jsOnlyNotice,
+    setJsOnlyNotice,
+  } = useChat({ ownHost });
 
   const [composerText, setComposerText] = useState(initialInput || '');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -135,6 +142,14 @@ export default function ChatPanel({
         attachment={ocrAttachment}
         onRemoveAttachment={onRemoveOcrAttachment}
         onRerunOcr={onRerunOcr}
+        pageScope={pageScope}
+        onPageScopeChange={setPageScope}
+        consentPrompt={consentPrompt}
+        jsOnlyNotice={jsOnlyNotice}
+        onDismissJsNotice={() => setJsOnlyNotice(false)}
+        ownHost={ownHost}
+        maxChars={settings.pageContextMaxChars}
+        keepQuery={settings.pageContextKeepQuery}
       />
 
       {/* Settings Drawer */}

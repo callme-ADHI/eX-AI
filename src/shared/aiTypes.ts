@@ -1,5 +1,7 @@
 // ─── eX-AI Shared AI Types ────────────────────────────────────────────────────
 
+import type { Scope, ContextMeta, ActivityItem } from '../content/pageText/types';
+
 /** Modes for the AI assistant */
 export type AIMode = 'general' | 'aptitude' | 'coding' | 'reasoning';
 
@@ -8,6 +10,9 @@ export type EdgeTriggerMode = 'strip' | 'handle' | 'off';
 
 /** OCR recognition mode */
 export type OCRMode = 'text' | 'code';
+
+/** Browse mode: context only vs tool-augmented */
+export type BrowseMode = 'context' | 'tools';
 
 /** eX-AI settings shape — all fields have defaults */
 export interface ExAISettings {
@@ -21,6 +26,15 @@ export interface ExAISettings {
   ocrDefaultMode: OCRMode;
   securityEngineEnabled: boolean;
   showAllModels: boolean;
+  // Website Awareness settings
+  pageContext: 'off' | Scope;
+  pageContextMaxChars: number;
+  pageContextKeepQuery: boolean;
+  pageContextAllowIncognito: boolean;
+  browseMode: BrowseMode;
+  crawlMaxPages: number;
+  crawlDepth: number;
+  crawlDelayMs: number;
 }
 
 export const DEFAULT_EXAI_SETTINGS: ExAISettings = {
@@ -34,6 +48,14 @@ export const DEFAULT_EXAI_SETTINGS: ExAISettings = {
   ocrDefaultMode: 'text',
   securityEngineEnabled: false,
   showAllModels: false,
+  pageContext: 'off',
+  pageContextMaxChars: 60_000,
+  pageContextKeepQuery: false,
+  pageContextAllowIncognito: false,
+  browseMode: 'context',
+  crawlMaxPages: 25,
+  crawlDepth: 2,
+  crawlDelayMs: 400,
 };
 
 /** A chat message in the conversation */
@@ -46,6 +68,8 @@ export interface ChatMessage {
   modelId?: string;         // which model answered
   interrupted?: boolean;    // stream ended by tab unload
   thumbnail?: string;       // OCR crop thumbnail data URL
+  pageMeta?: ContextMeta;   // only metadata, never raw page block
+  activity?: ActivityItem[];// tool activity items during answer generation
   timestamp: number;
 }
 
@@ -75,8 +99,18 @@ export interface ModelEntry {
 // ─── Port message types (content ⇄ service worker via port 'ex-ai-chat') ────
 
 export type PortMessageIn =
-  | { type: 'CHAT_START'; requestId: string; messages: ChatMessage[]; model?: string; think: boolean; mode: AIMode }
-  | { type: 'ABORT' };
+  | {
+      type: 'CHAT_START';
+      requestId: string;
+      messages: ChatMessage[];
+      model?: string;
+      think: boolean;
+      mode: AIMode;
+      context?: { block: string; meta: ContextMeta };
+      tools?: boolean;
+    }
+  | { type: 'ABORT' }
+  | { type: 'TOOL_RESULT'; id: string; ok: boolean; content: string };
 
 export type PortMessageOut =
   | { type: 'QUEUED'; etaMs: number }
@@ -85,7 +119,8 @@ export type PortMessageOut =
   | { type: 'DELTA'; text: string }
   | { type: 'DONE'; finishReason: string; usage?: { prompt_tokens: number; completion_tokens: number } }
   | { type: 'ERROR'; code: AIErrorCode; message: string }
-  | { type: 'PING' };
+  | { type: 'PING' }
+  | { type: 'TOOL_CALL'; id: string; name: string; args: Record<string, unknown> };
 
 export type AIErrorCode = 'auth' | 'forbidden-model' | 'rate-limit' | 'network' | 'timeout' | 'unknown';
 

@@ -23,8 +23,18 @@ import {
   createDebouncedSave,
 } from './chatStore';
 import { sanitizeAssistantAttribution } from '../../../shared/aiSanitizer';
+import type { Scope, ContextPack } from '../../pageText/types';
+import { collectContext } from '../../pageText/collectContext';
+import { isOriginAllowed, allowOnce, allowAlways, isIncognito, looksSensitive } from '../../pageText/consent';
+import { refersToPage } from '../../pageText/intent';
 
-export function useChat() {
+interface UseChatOptions {
+  ownHost?: Element | null;
+}
+
+export function useChat(options: UseChatOptions = {}) {
+  const { ownHost } = options;
+
   const [session, setSession] = useState<ChatSession>({
     id: generateChatId(),
     title: 'New Chat',
@@ -38,6 +48,29 @@ export function useChat() {
   const [hasKey, setHasKey] = useState(false);
   const [keyHint, setKeyHint] = useState('');
   const [models, setModels] = useState<ModelEntry[]>([]);
+
+  // Website Awareness UI states
+  const [pageScope, setPageScope] = useState<'off' | Scope>('off');
+  const [consentPrompt, setConsentPrompt] = useState<{
+    origin: string;
+    isSensitive?: boolean;
+    customMessage?: string;
+    onAllowOnce: () => void;
+    onAllowAlways?: () => void;
+    onCancel: () => void;
+    allowAlwaysLabel?: string;
+    cancelLabel?: string;
+  } | null>(null);
+  const [jsOnlyNotice, setJsOnlyNotice] = useState(false);
+
+  // Sync default scope when settings load once
+  const scopeInitRef = useRef(false);
+  useEffect(() => {
+    if (!scopeInitRef.current && settings.pageContext) {
+      setPageScope(settings.pageContext);
+      scopeInitRef.current = true;
+    }
+  }, [settings.pageContext]);
 
   // Streaming states
   const [isStreaming, setIsStreaming] = useState(false);
@@ -111,28 +144,7 @@ export function useChat() {
     return () => chrome.storage.onChanged.removeListener(listener);
   }, [refreshSettings]);
 
-  // ── 3. Page unload handler: mark interrupted stream ───────────────────────
-  useEffect(() => {
-    const onBeforeUnload = () => {
-      if (isStreamingRef.current && sessionRef.current) {
-        const msgs = [...sessionRef.current.messages];
-        const last = msgs[msgs.length - 1];
-        if (last && last.role === 'assistant') {
-          last.interrupted = true;
-          saveChatSession({ ...sessionRef.current, messages: msgs });
-        }
-        if (portRef.current) {
-          portRef.current.disconnect();
-          portRef.current = null;
-        }
-      }
-    };
-
-    window.addEventListener('beforeunload', onBeforeUnload);
-    return () => window.removeEventListener('beforeunload', onBeforeUnload);
-  }, []);
-
-  // ── 4. Initial load of active chat ────────────────────────────────────────
+  // ── 3. Initial load of active session ────────────────────────────────────
   useEffect(() => {
     (async () => {
       await refreshSettings();
@@ -141,47 +153,104 @@ export function useChat() {
 
       const activeId = await getActiveChatId();
       if (activeId) {
-        const existing = await loadChatSession(activeId);
-        if (existing) {
-          setSession(existing);
+        const stored = await loadChatSession(activeId);
+        if (stored) {
+          // If the last message was left streaming when tab unloaded, mark it interrupted
+          const msgs = stored.messages.map((m, idx) => {
+            if (idx === stored.messages.length - 1 && m.role === 'assistant' && !m.content) {
+              return { ...m, interrupted: true, content: '*(Generation interrupted)*' };
+            }
+            return m;
+          });
+          setSession({ ...stored, messages: msgs });
           return;
         }
       }
-
-      // No existing or valid chat: start a new one
-      const newId = generateChatId();
-      const newSession: ChatSession = {
-        id: newId,
+      // Or create initial session
+      const newSess: ChatSession = {
+        id: generateChatId(),
         title: 'New Chat',
         mode: 'general',
         messages: [],
         updatedAt: Date.now(),
       };
-      setSession(newSession);
-      await setActiveChatId(newId);
+      setSession(newSess);
+      await saveChatSession(newSess);
+      await setActiveChatId(newSess.id);
     })();
   }, [refreshSettings, refreshModels, refreshChatIndex]);
 
-  // ── 5. Connect Port ───────────────────────────────────────────────────────
+  // ── 4. Connect long-lived port to service worker ──────────────────────────
   const getPort = useCallback(() => {
     if (portRef.current) return portRef.current;
-
     try {
-      const p = chrome.runtime.connect({ name: 'ex-ai-chat' });
-      p.onDisconnect.addListener(() => {
+      const port = chrome.runtime.connect({ name: 'ex-ai-chat' });
+      port.onDisconnect.addListener(() => {
         portRef.current = null;
+        if (isStreamingRef.current) {
+          setIsStreaming(false);
+          setStreamingMessageId(undefined);
+          setQueuedEtaMs(null);
+          setCurrentError({
+            code: 'network',
+            message: 'Connection to background worker lost. Please retry.',
+          });
+        }
       });
-      portRef.current = p;
-      return p;
-    } catch (e) {
-      console.error('[eX-AI] Failed to connect port:', e);
+      portRef.current = port;
+      return port;
+    } catch (err: any) {
+      console.error('[eX-AI] Failed to connect port:', err);
       return null;
     }
   }, []);
 
+  // Cleanup port on unmount
+  useEffect(() => {
+    return () => {
+      if (portRef.current) {
+        try {
+          portRef.current.disconnect();
+        } catch {
+          // ignore
+        }
+        portRef.current = null;
+      }
+    };
+  }, []);
+
+  // ── 5. Unload handler (mark in-flight message interrupted) ─────────────────
+  useEffect(() => {
+    const handleUnload = () => {
+      if (isStreamingRef.current) {
+        const msgs = [...sessionRef.current.messages];
+        const last = msgs[msgs.length - 1];
+        if (last && last.role === 'assistant') {
+          msgs[msgs.length - 1] = {
+            ...last,
+            interrupted: true,
+            content: last.content ? last.content + '\n\n*(Generation interrupted)*' : '*(Generation interrupted)*',
+          };
+          const updated = { ...sessionRef.current, messages: msgs };
+          saveChatSession(updated);
+        }
+        if (portRef.current) {
+          try {
+            portRef.current.postMessage({ type: 'ABORT' });
+          } catch {
+            // ignore
+          }
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, []);
+
   // ── 6. Send Message / Stream ──────────────────────────────────────────────
   const startStream = useCallback(
-    (historyMessages: ChatMessage[], assistantMsgId: string) => {
+    (historyMessages: ChatMessage[], assistantMsgId: string, contextPack?: ContextPack | null) => {
       const port = getPort();
       if (!port) {
         setCurrentError({ code: 'network', message: 'Could not connect to service worker.' });
@@ -316,22 +385,23 @@ export function useChat() {
         model: settings.model,
         think: settings.think,
         mode: sessionRef.current.mode,
+        context: contextPack ? { block: contextPack.block, meta: contextPack.meta } : undefined,
+        tools: settings.browseMode === 'tools',
       });
     },
-    [getPort, settings.model, settings.think]
+    [getPort, settings.model, settings.think, settings.browseMode]
   );
 
-  // Send a new prompt from user
-  const sendMessage = useCallback(
-    (text: string, fromOcr = false, thumbnail?: string) => {
-      if (!text.trim() || isStreaming) return;
-
+  // Directly dispatch message to session and streaming
+  const doSend = useCallback(
+    (trimmedText: string, fromOcr: boolean, thumbnail: string | undefined, pack: ContextPack | null) => {
       const userMsg: ChatMessage = {
         id: 'u_' + Date.now().toString(36),
         role: 'user',
-        content: text.trim(),
+        content: trimmedText,
         fromOcr,
         thumbnail,
+        pageMeta: pack ? pack.meta : undefined,
         timestamp: Date.now(),
       };
 
@@ -348,9 +418,116 @@ export function useChat() {
       setSession(updatedSession);
       saveChatSession(updatedSession);
 
-      startStream(updatedMessages.slice(0, -1), assistantMsg.id);
+      startStream(updatedMessages.slice(0, -1), assistantMsg.id, pack);
     },
-    [isStreaming, settings.model, startStream]
+    [settings.model, startStream]
+  );
+
+  const executeWithContext = useCallback(
+    async (trimmedText: string, fromOcr: boolean, thumbnail: string | undefined, scope: 'off' | Scope) => {
+      let pack: ContextPack | null = null;
+      if (scope !== 'off') {
+        try {
+          pack = await collectContext(
+            {
+              pageContext: scope,
+              pageContextMaxChars: settings.pageContextMaxChars || 60_000,
+              pageContextKeepQuery: settings.pageContextKeepQuery ?? false,
+            },
+            trimmedText,
+            ownHost ?? null
+          );
+          if (pack && !pack.meta.rendered) {
+            setJsOnlyNotice(true);
+          } else {
+            setJsOnlyNotice(false);
+          }
+        } catch (e) {
+          console.warn('[eX-AI] Failed to collect context:', e);
+        }
+      }
+
+      doSend(trimmedText, fromOcr, thumbnail, pack);
+    },
+    [settings.pageContextMaxChars, settings.pageContextKeepQuery, ownHost, doSend]
+  );
+
+  // Send a new prompt from user with Website Awareness & consent gates
+  const sendMessage = useCallback(
+    async (text: string, fromOcr = false, thumbnail?: string, overrideScope?: 'off' | Scope) => {
+      if (!text.trim() || isStreaming) return;
+
+      const trimmedText = text.trim();
+      const currentScope = overrideScope !== undefined ? overrideScope : pageScope;
+
+      // Intent check when scope is off
+      if (currentScope === 'off') {
+        if (refersToPage(trimmedText)) {
+          setConsentPrompt({
+            origin: location.origin,
+            customMessage: "Include this page's text to help answer your question?",
+            onAllowOnce: () => {
+              setConsentPrompt(null);
+              setPageScope('main');
+              executeWithContext(trimmedText, fromOcr, thumbnail, 'main');
+            },
+            onAllowAlways: async () => {
+              setConsentPrompt(null);
+              setPageScope('main');
+              await allowAlways(location.origin);
+              executeWithContext(trimmedText, fromOcr, thumbnail, 'main');
+            },
+            onCancel: () => {
+              setConsentPrompt(null);
+              doSend(trimmedText, fromOcr, thumbnail, null);
+            },
+            allowAlwaysLabel: 'Always on this site',
+            cancelLabel: 'No, send anyway',
+          });
+          return;
+        }
+        doSend(trimmedText, fromOcr, thumbnail, null);
+        return;
+      }
+
+      // Scope is active: check incognito
+      if (isIncognito() && !settings.pageContextAllowIncognito) {
+        setCurrentError({
+          code: 'auth',
+          message: 'Page context is disabled in Incognito mode by default (enable in Settings).',
+        });
+        return;
+      }
+
+      // Check consent
+      const origin = location.origin;
+      const sensitive = looksSensitive(location.href);
+      const allowed = await isOriginAllowed(origin);
+
+      if (sensitive || !allowed) {
+        setConsentPrompt({
+          origin,
+          isSensitive: sensitive,
+          onAllowOnce: () => {
+            allowOnce(origin);
+            setConsentPrompt(null);
+            executeWithContext(trimmedText, fromOcr, thumbnail, currentScope);
+          },
+          onAllowAlways: async () => {
+            await allowAlways(origin);
+            setConsentPrompt(null);
+            executeWithContext(trimmedText, fromOcr, thumbnail, currentScope);
+          },
+          onCancel: () => {
+            setConsentPrompt(null);
+          },
+        });
+        return;
+      }
+
+      await executeWithContext(trimmedText, fromOcr, thumbnail, currentScope);
+    },
+    [isStreaming, pageScope, settings, executeWithContext, doSend]
   );
 
   // Abort ongoing stream
@@ -430,37 +607,35 @@ export function useChat() {
   // New Chat
   const startNewChat = useCallback(async () => {
     if (isStreaming) stopGenerating();
-
-    const newId = generateChatId();
-    const newSession: ChatSession = {
-      id: newId,
+    const newSess: ChatSession = {
+      id: generateChatId(),
       title: 'New Chat',
       mode: sessionRef.current.mode,
       messages: [],
       updatedAt: Date.now(),
     };
-
-    setSession(newSession);
-    setCurrentError(null);
-    await setActiveChatId(newId);
+    setSession(newSess);
+    await saveChatSession(newSess);
+    await setActiveChatId(newSess.id);
     await refreshChatIndex();
   }, [isStreaming, stopGenerating, refreshChatIndex]);
 
-  // Select existing chat
+  // Switch Chat
   const selectChat = useCallback(
     async (id: string) => {
+      if (id === sessionRef.current.id) return;
       if (isStreaming) stopGenerating();
-      const loaded = await loadChatSession(id);
-      if (loaded) {
-        setSession(loaded);
-        setCurrentError(null);
+
+      const stored = await loadChatSession(id);
+      if (stored) {
+        setSession(stored);
         await setActiveChatId(id);
       }
     },
     [isStreaming, stopGenerating]
   );
 
-  // Delete chat
+  // Delete Chat
   const deleteChatSession = useCallback(
     async (id: string) => {
       await storeDeleteChat(id);
@@ -472,7 +647,7 @@ export function useChat() {
     [refreshChatIndex, startNewChat]
   );
 
-  // Rename chat
+  // Rename Chat
   const renameChatSession = useCallback(
     async (id: string, newTitle: string) => {
       await storeRenameChat(id, newTitle);
@@ -484,52 +659,41 @@ export function useChat() {
     [refreshChatIndex]
   );
 
-  // Export chat
-  const exportChat = useCallback(async (id: string) => {
-    const s = await loadChatSession(id);
-    if (!s) return;
-    const md = exportChatAsMarkdown(s);
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${s.title.replace(/[^a-z0-9_-]/gi, '_')}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
+  // Export Chat
+  const exportChat = useCallback(() => {
+    exportChatAsMarkdown(sessionRef.current);
   }, []);
 
-  // Update mode
-  const setMode = useCallback((mode: AIMode) => {
-    setSession((prev) => {
-      const updated = { ...prev, mode };
+  // Set Assistant Mode
+  const setMode = useCallback(
+    (mode: AIMode) => {
+      const updated = { ...sessionRef.current, mode };
+      setSession(updated);
       saveChatSession(updated);
-      return updated;
-    });
-  }, []);
+      updateSettings({ mode });
+    },
+    []
+  );
 
-  // Update settings
+  // Update Settings
   const updateSettings = useCallback(
     async (partial: Partial<ExAISettings>) => {
+      const updated = { ...settings, ...partial };
+      setSettings(updated);
       await new Promise<void>((resolve) => {
         chrome.runtime.sendMessage({ type: 'AI_SETTINGS_SET', settings: partial }, () => resolve());
       });
-      await refreshSettings();
-      if (partial.showAllModels !== undefined) {
-        await refreshModels();
-      }
     },
-    [refreshSettings, refreshModels]
+    [settings]
   );
 
-  // Save key
+  // Save API Key
   const saveKey = useCallback(
-    async (key: string) => {
-      const res = await new Promise<{ ok: boolean; error?: string }>((resolve) => {
-        chrome.runtime.sendMessage({ type: 'AI_KEY_SET', key }, (r) =>
-          resolve(r?.data || { ok: false, error: 'Failed' })
-        );
+    async (key: string): Promise<{ ok: boolean; error?: string }> => {
+      const res = await new Promise<any>((resolve) => {
+        chrome.runtime.sendMessage({ type: 'AI_KEY_SET', key }, (r) => resolve(r?.data));
       });
-      if (res.ok) {
+      if (res?.ok) {
         await refreshSettings();
         await refreshModels(true);
       }
@@ -571,5 +735,12 @@ export function useChat() {
     updateSettings,
     saveKey,
     clearKey,
+    // Website Awareness
+    pageScope,
+    setPageScope,
+    consentPrompt,
+    setConsentPrompt,
+    jsOnlyNotice,
+    setJsOnlyNotice,
   };
 }

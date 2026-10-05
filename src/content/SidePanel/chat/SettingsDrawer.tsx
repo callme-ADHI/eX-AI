@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { ExAISettings, ModelEntry } from '../../../shared/aiTypes';
+import { forgetAllOrigins, getAllowedOrigins } from '../../pageText/consent';
 import styles from './chat.module.css';
 
 interface SettingsDrawerProps {
@@ -29,12 +30,15 @@ export default function SettingsDrawer({
   const [keyError, setKeyError] = useState<string | null>(null);
   const [keySuccess, setKeySuccess] = useState(false);
   const [isVerifyingKey, setIsVerifyingKey] = useState(false);
+  const [allowedOrigins, setAllowedOrigins] = useState<string[]>([]);
 
   useEffect(() => {
     if (!isOpen) {
       setApiKeyInput('');
       setKeyError(null);
       setKeySuccess(false);
+    } else {
+      getAllowedOrigins().then(setAllowedOrigins);
     }
   }, [isOpen]);
 
@@ -67,6 +71,11 @@ export default function SettingsDrawer({
       setKeySuccess(false);
       setKeyError(null);
     }
+  };
+
+  const handleForgetAllOrigins = async () => {
+    await forgetAllOrigins();
+    setAllowedOrigins([]);
   };
 
   return (
@@ -243,6 +252,137 @@ export default function SettingsDrawer({
           </div>
         </div>
 
+        {/* Website Awareness Section */}
+        <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '14px', marginTop: '6px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: '#7094ff', marginBottom: '10px' }}>
+            🌐 Website Awareness
+          </div>
+
+          {/* Default page context scope */}
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>Default Page Context</label>
+            <select
+              className={styles.fieldInput}
+              style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
+              value={settings.pageContext || 'off'}
+              onChange={(e) =>
+                onUpdateSettings({ pageContext: e.target.value as any })
+              }
+            >
+              <option value="off">Off (manual activation)</option>
+              <option value="main">Main content only</option>
+              <option value="page">Full page</option>
+              <option value="selection">Selection only</option>
+            </select>
+          </div>
+
+          {/* Max Characters */}
+          <div className={styles.fieldGroup}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <label className={styles.fieldLabel}>Max Page Characters</label>
+              <span style={{ fontSize: '11px', color: '#7094ff' }}>
+                {(settings.pageContextMaxChars || 60_000).toLocaleString()} chars
+              </span>
+            </div>
+            <input
+              type="range"
+              min="10000"
+              max="200000"
+              step="5000"
+              value={settings.pageContextMaxChars || 60_000}
+              onChange={(e) =>
+                onUpdateSettings({ pageContextMaxChars: Number(e.target.value) })
+              }
+              style={{ accentColor: '#2452ff' }}
+            />
+          </div>
+
+          {/* Browse Mode */}
+          <div className={styles.fieldGroup}>
+            <label className={styles.fieldLabel}>Browse Capability</label>
+            <select
+              className={styles.fieldInput}
+              style={{ colorScheme: 'dark', backgroundColor: '#14141c', color: '#e8e8f0' }}
+              value={settings.browseMode || 'context'}
+              onChange={(e) =>
+                onUpdateSettings({ browseMode: e.target.value as any })
+              }
+            >
+              <option value="context">Context only (read current page text & structure)</option>
+              <option value="tools">Tool-calling browse (fetch linked pages on demand)</option>
+            </select>
+          </div>
+
+          {/* Keep query in URL */}
+          <div className={styles.fieldGroup}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={settings.pageContextKeepQuery || false}
+                onChange={(e) =>
+                  onUpdateSettings({ pageContextKeepQuery: e.target.checked })
+                }
+              />
+              <span style={{ fontSize: '12px' }}>Keep URL query parameters (default strips tracking & query)</span>
+            </label>
+          </div>
+
+          {/* Allow in incognito */}
+          <div className={styles.fieldGroup}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={settings.pageContextAllowIncognito || false}
+                onChange={(e) =>
+                  onUpdateSettings({ pageContextAllowIncognito: e.target.checked })
+                }
+              />
+              <span style={{ fontSize: '12px' }}>Allow page context in Incognito windows</span>
+            </label>
+            <div className={styles.fieldNote}>
+              Disabled by default to prevent sending private incognito page text to external API.
+            </div>
+          </div>
+
+          {/* Remembered Sites Consent */}
+          <div className={styles.fieldGroup}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', color: 'rgba(232, 232, 240, 0.7)' }}>
+                Remembered allowed sites: <strong>{allowedOrigins.length}</strong>
+              </span>
+              {allowedOrigins.length > 0 && (
+                <button
+                  className={styles.actionBtnSmall}
+                  onClick={handleForgetAllOrigins}
+                  style={{ color: '#f87171' }}
+                >
+                  Forget all
+                </button>
+              )}
+            </div>
+            {allowedOrigins.length > 0 && (
+              <div
+                style={{
+                  maxHeight: '60px',
+                  overflowY: 'auto',
+                  fontSize: '10px',
+                  color: 'rgba(232, 232, 240, 0.5)',
+                  background: 'rgba(0, 0, 0, 0.2)',
+                  padding: '4px 6px',
+                  borderRadius: '4px',
+                }}
+              >
+                {allowedOrigins.join(', ')}
+              </div>
+            )}
+          </div>
+
+          {/* Read-only blocked patterns notice */}
+          <div className={styles.fieldNote} style={{ marginTop: '4px' }}>
+            🛡️ <strong>Safety blocklist active:</strong> Action links (logout, delete, cart, admin, payment) and binary downloads are never fetched.
+          </div>
+        </div>
+
         {/* Usage note */}
         <div
           style={{
@@ -253,6 +393,7 @@ export default function SettingsDrawer({
             fontSize: '11px',
             color: 'rgba(232, 232, 240, 0.6)',
             lineHeight: 1.5,
+            marginTop: '12px',
           }}
         >
           ℹ️ <strong>NVIDIA NIM Free Tier:</strong> Designed for development & prototyping with ~40 requests/minute shared across all models. Requests in excess of rate limits will queue smoothly.

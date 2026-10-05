@@ -505,6 +505,7 @@ export default function SidePanel({
                     onRerunOcr={handleRerunOcr}
                     initialInput={composerInput}
                     onInputChange={setComposerInput}
+                    ownHost={container}
                   />
                 )}
 

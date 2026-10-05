@@ -19,13 +19,15 @@ export function estimateTokens(text: string): number {
  * Prepares and trims message history to fit within maxTokens.
  * - Always includes the system prompt.
  * - Formats user messages flagged with fromOcr with OCR_PREFIX.
+ * - Injects contextBlock into the last user message if provided.
  * - Never includes past reasoning in history sent to the model.
  * - Retains as many recent messages as fit within maxTokens (default 60,000).
  */
 export function prepareAndTrimMessages(
   systemPrompt: string,
   history: ChatMessage[],
-  maxTokens = 60_000
+  maxTokens = 60_000,
+  contextBlock?: string
 ): APIMessage[] {
   const systemMsg: APIMessage = { role: 'system', content: systemPrompt };
   const systemTokens = estimateTokens(systemPrompt);
@@ -35,11 +37,23 @@ export function prepareAndTrimMessages(
     return [systemMsg];
   }
 
+  // Find last user message index
+  let lastUserIdx = -1;
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (history[i].role === 'user') {
+      lastUserIdx = i;
+      break;
+    }
+  }
+
   // Convert history messages into clean API messages (no reasoning, prefix OCR)
-  const cleanHistory: APIMessage[] = history.map((msg) => {
+  const cleanHistory: APIMessage[] = history.map((msg, idx) => {
     let content = msg.content || '';
     if (msg.role === 'user' && msg.fromOcr && !content.startsWith(OCR_PREFIX)) {
       content = `${OCR_PREFIX}\n\n${content}`;
+    }
+    if (contextBlock && idx === lastUserIdx) {
+      content = `${contextBlock}\n\n${content}`;
     }
     return {
       role: msg.role,

@@ -109,8 +109,8 @@ export function initAIClient() {
           new Set([primaryModel, ...(settings.fallbackChain || [])])
         );
 
-        const systemPrompt = getSystemPrompt(msg.mode || settings.mode);
-        const apiMessages = prepareAndTrimMessages(systemPrompt, msg.messages);
+        const systemPrompt = getSystemPrompt(msg.mode || settings.mode, !!msg.tools);
+        const apiMessages = prepareAndTrimMessages(systemPrompt, msg.messages, 60_000, msg.context?.block);
 
         currentAbortController = new AbortController();
         startPing();

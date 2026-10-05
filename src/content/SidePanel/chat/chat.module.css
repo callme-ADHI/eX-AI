@@ -837,3 +837,44 @@
   color: rgba(232, 232, 240, 0.45);
   line-height: 1.4;
 }
+
+/* ─── Website Awareness UI ────────────────────────────────────────────────── */
+.consentBar {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.pageChipActive {
+  background: rgba(36, 82, 255, 0.2) !important;
+  border-color: rgba(36, 82, 255, 0.6) !important;
+}
+
+.quickActions {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+}
+
+.quickActions::-webkit-scrollbar {
+  display: none;
+}
+
+.quickActionBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 3px 10px;
+  font-size: 11px;
+  color: rgba(232, 232, 240, 0.75);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.quickActionBtn:hover {
+  background: rgba(36, 82, 255, 0.15);
+  border-color: rgba(36, 82, 255, 0.4);
+  color: #7094ff;
+}
+
