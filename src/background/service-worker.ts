@@ -26,6 +26,8 @@ import { initAIClient } from './ai/nvidiaClient';
 import { handleSettingsGet, handleSettingsSet, handleKeySet, handleKeyClear } from './ai/settings';
 import { handleModelsList } from './ai/models';
 import { captureVisibleTab, handleOcrWarm, handleOcrRun } from './snip/capture';
+import { registerEditorFill } from './autofill/editorFill';
+import { loadSettings } from './ai/settings';
 
 // ─── Service Worker Entry Point ───────────────────────────────────────────────
 
@@ -65,12 +67,20 @@ initProductivityEngine();
 initializeTabIntelligence();
 initAIClient();
 
+// Register Autofill editor fill in MAIN world
+registerEditorFill(async () => {
+  const s = await loadSettings();
+  return s.autofillAllow ?? [];
+});
 
 // ─── Message router ───────────────────────────────────────────────────────────
 // IMPORTANT: handlers that respond asynchronously must return true.
 
 chrome.runtime.onMessage.addListener(
   (message: Message, sender, sendResponse: (r: MessageResponse) => void) => {
+    if ((message as any)?.type?.startsWith?.('AUTOFILL_')) {
+      return; // Handled by dedicated autofill listeners
+    }
     handleMessage(message, sender)
       .then((data) => sendResponse({ ok: true, data }))
       .catch((err) => sendResponse({ ok: false, error: String(err) }));

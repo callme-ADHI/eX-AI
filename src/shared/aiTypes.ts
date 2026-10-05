@@ -35,6 +35,12 @@ export interface ExAISettings {
   crawlMaxPages: number;
   crawlDepth: number;
   crawlDelayMs: number;
+  // Autofill settings
+  autofillEnabled: boolean;
+  autofillAllow: string[];
+  autofillDelayMs: number;
+  autofillOverwrite: boolean;
+  autofillThink: boolean;
 }
 
 export const DEFAULT_EXAI_SETTINGS: ExAISettings = {
@@ -56,6 +62,11 @@ export const DEFAULT_EXAI_SETTINGS: ExAISettings = {
   crawlMaxPages: 25,
   crawlDepth: 2,
   crawlDelayMs: 400,
+  autofillEnabled: false,
+  autofillAllow: [],
+  autofillDelayMs: 80,
+  autofillOverwrite: false,
+  autofillThink: true,
 };
 
 /** A chat message in the conversation */
