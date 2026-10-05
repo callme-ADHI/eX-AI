@@ -134,10 +134,10 @@ export class ThinkingStreamSplitter {
  */
 export function parseSSEData(data: string): {
   choices?: Array<{
-    delta?: { content?: string | null; reasoning_content?: string | null };
+    delta?: { content?: string | null; reasoning_content?: string | null; tool_calls?: any[] };
     finish_reason?: string | null;
   }>;
-  delta?: { content?: string | null; reasoning_content?: string | null };
+  delta?: { content?: string | null; reasoning_content?: string | null; tool_calls?: any[] };
   finish_reason?: string;
   usage?: { prompt_tokens: number; completion_tokens: number };
   error?: { message: string; code?: string | number };

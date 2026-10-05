@@ -116,6 +116,11 @@ export default function ChatPanel({
         onNewChat={startNewChat}
         onOpenHistory={() => setIsHistoryOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        pageScope={pageScope}
+        onPageScopeChange={setPageScope}
+        browseMode={settings.browseMode || 'context'}
+        onBrowseModeChange={(mode) => updateSettings({ browseMode: mode })}
+        onTriggerAction={(text) => sendMessage(text)}
       />
 
       <MessageList

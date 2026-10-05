@@ -1,5 +1,7 @@
 import React from 'react';
-import type { AIMode, ModelEntry } from '../../../shared/aiTypes';
+import type { AIMode, ModelEntry, BrowseMode } from '../../../shared/aiTypes';
+import type { Scope } from '../../pageText/types';
+import BrowseMenu from './BrowseMenu';
 import styles from './chat.module.css';
 
 interface ChatHeaderProps {
@@ -13,6 +15,13 @@ interface ChatHeaderProps {
   onNewChat: () => void;
   onOpenHistory: () => void;
   onOpenSettings: () => void;
+  // Website Awareness
+  pageScope: 'off' | Scope;
+  onPageScopeChange: (scope: 'off' | Scope) => void;
+  browseMode: BrowseMode;
+  onBrowseModeChange: (mode: BrowseMode) => void;
+  onTriggerAction: (promptText: string) => void;
+  onOpenIndexDrawer?: () => void;
 }
 
 export default function ChatHeader({
@@ -26,6 +35,12 @@ export default function ChatHeader({
   onNewChat,
   onOpenHistory,
   onOpenSettings,
+  pageScope,
+  onPageScopeChange,
+  browseMode,
+  onBrowseModeChange,
+  onTriggerAction,
+  onOpenIndexDrawer,
 }: ChatHeaderProps) {
   const modes: Array<{ id: AIMode; label: string }> = [
     { id: 'general', label: 'General' },
@@ -63,6 +78,14 @@ export default function ChatHeader({
         </div>
 
         <div className={styles.headerActions}>
+          <BrowseMenu
+            pageScope={pageScope}
+            onPageScopeChange={onPageScopeChange}
+            browseMode={browseMode}
+            onBrowseModeChange={onBrowseModeChange}
+            onTriggerAction={onTriggerAction}
+            onOpenIndexDrawer={onOpenIndexDrawer}
+          />
           <button
             className={styles.iconBtn}
             onClick={onNewChat}

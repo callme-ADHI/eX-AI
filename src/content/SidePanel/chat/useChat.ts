@@ -23,10 +23,11 @@ import {
   createDebouncedSave,
 } from './chatStore';
 import { sanitizeAssistantAttribution } from '../../../shared/aiSanitizer';
-import type { Scope, ContextPack } from '../../pageText/types';
+import type { Scope, ContextPack, ActivityItem } from '../../pageText/types';
 import { collectContext } from '../../pageText/collectContext';
 import { isOriginAllowed, allowOnce, allowAlways, isIncognito, looksSensitive } from '../../pageText/consent';
 import { refersToPage } from '../../pageText/intent';
+import { executeTool } from '../../pageText/tools';
 
 interface UseChatOptions {
   ownHost?: Element | null;
@@ -331,6 +332,68 @@ export function useChat(options: UseChatOptions = {}) {
               throttleTimer = null;
             }, 40); // 40ms batching
           }
+          return;
+        }
+
+        if (msg.type === 'TOOL_CALL') {
+          flushDeltas();
+
+          const activityId = msg.id;
+          const currentMsgs = [...sessionRef.current.messages];
+          const targetIdx = currentMsgs.findIndex((m) => m.id === assistantMsgId);
+
+          const runningActivity: ActivityItem = {
+            id: activityId,
+            label: `Calling ${msg.name}...`,
+            state: 'running',
+          };
+
+          if (targetIdx !== -1) {
+            const prevActivity = currentMsgs[targetIdx].activity || [];
+            currentMsgs[targetIdx] = {
+              ...currentMsgs[targetIdx],
+              activity: [...prevActivity, runningActivity],
+            };
+            setSession({ ...sessionRef.current, messages: currentMsgs });
+          }
+
+          executeTool(msg.name, msg.args, ownHost ?? null, async (confirmMsg) => {
+            return window.confirm(confirmMsg);
+          })
+            .then((result) => {
+              const msgsAfter = [...sessionRef.current.messages];
+              const idxAfter = msgsAfter.findIndex((m) => m.id === assistantMsgId);
+              if (idxAfter !== -1) {
+                const actList = (msgsAfter[idxAfter].activity || []).map((a) =>
+                  a.id === activityId
+                    ? {
+                        ...a,
+                        label: result.activityLabel,
+                        state: result.ok ? ('done' as const) : ('blocked' as const),
+                        url: result.url,
+                      }
+                    : a
+                );
+                msgsAfter[idxAfter] = { ...msgsAfter[idxAfter], activity: actList };
+                setSession({ ...sessionRef.current, messages: msgsAfter });
+              }
+
+              port.postMessage({
+                type: 'TOOL_RESULT',
+                id: msg.id,
+                ok: result.ok,
+                content: result.content,
+              });
+            })
+            .catch((err) => {
+              port.postMessage({
+                type: 'TOOL_RESULT',
+                id: msg.id,
+                ok: false,
+                content: `<tool_result name="${msg.name}" untrusted="true">Execution error: ${err.message || 'unknown'}</tool_result>`,
+              });
+            });
+
           return;
         }
 

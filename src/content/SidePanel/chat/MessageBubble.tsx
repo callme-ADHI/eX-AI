@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { ChatMessage, AIErrorCode } from '../../../shared/aiTypes';
 import Markdown from './Markdown';
 import ThinkingBlock from './ThinkingBlock';
+import ActivityLines from './ActivityLines';
 import { sanitizeAssistantAttribution } from '../../../shared/aiSanitizer';
 import styles from './chat.module.css';
 
@@ -62,6 +63,36 @@ const MessageBubble = React.memo(function MessageBubble({
     return (
       <div className={styles.userRow}>
         <div className={styles.userBubble}>
+          {message.pageMeta && (
+            <div
+              style={{
+                fontSize: '10px',
+                color: '#7094ff',
+                background: 'rgba(36, 82, 255, 0.15)',
+                border: '1px solid rgba(36, 82, 255, 0.3)',
+                borderRadius: '4px',
+                padding: '2px 6px',
+                marginBottom: '6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                maxWidth: '100%',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+              title={message.pageMeta.url}
+            >
+              <span>📄</span>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {message.pageMeta.title || message.pageMeta.url}
+              </span>
+              <span style={{ color: 'rgba(232, 232, 240, 0.55)', flexShrink: 0 }}>
+                ({(message.pageMeta.chars / 1000).toFixed(1)}k chars · {message.pageMeta.links} links)
+              </span>
+            </div>
+          )}
+
           {message.thumbnail && (
             <div style={{ marginBottom: '8px' }}>
               <img
@@ -138,6 +169,10 @@ const MessageBubble = React.memo(function MessageBubble({
   return (
     <div className={styles.assistantRow}>
       <div className={styles.assistantBubble}>
+        {message.activity && message.activity.length > 0 && (
+          <ActivityLines items={message.activity} isStreaming={isStreaming && isLastAssistant} />
+        )}
+
         {message.reasoning && (
           <ThinkingBlock
             reasoning={message.reasoning}
