@@ -5,6 +5,7 @@ import ThinkingBlock from './ThinkingBlock';
 import ActivityLines from './ActivityLines';
 import { ComponentErrorBoundary } from './ComponentErrorBoundary';
 import { sanitizeAssistantAttribution } from '../../../shared/aiSanitizer';
+import ChatFillButtons from './ChatFillButtons';
 import styles from './chat.module.css';
 
 interface MessageBubbleProps {
@@ -223,6 +224,10 @@ const MessageBubble = React.memo(function MessageBubble({
             >
               🔄 Regenerate
             </button>
+          )}
+
+          {message.role === 'assistant' && !isStreaming && (
+            <ChatFillButtons content={message.content} />
           )}
         </div>
       </div>
