@@ -2,6 +2,7 @@ import React from 'react';
 import type { AIMode, ModelEntry, BrowseMode } from '../../../shared/aiTypes';
 import type { Scope } from '../../pageText/types';
 import BrowseMenu from './BrowseMenu';
+import { ComponentErrorBoundary } from './ComponentErrorBoundary';
 import styles from './chat.module.css';
 
 interface ChatHeaderProps {
@@ -78,14 +79,16 @@ export default function ChatHeader({
         </div>
 
         <div className={styles.headerActions}>
-          <BrowseMenu
-            pageScope={pageScope}
-            onPageScopeChange={onPageScopeChange}
-            browseMode={browseMode}
-            onBrowseModeChange={onBrowseModeChange}
-            onTriggerAction={onTriggerAction}
-            onOpenIndexDrawer={onOpenIndexDrawer}
-          />
+          <ComponentErrorBoundary>
+            <BrowseMenu
+              pageScope={pageScope}
+              onPageScopeChange={onPageScopeChange}
+              browseMode={browseMode}
+              onBrowseModeChange={onBrowseModeChange}
+              onTriggerAction={onTriggerAction}
+              onOpenIndexDrawer={onOpenIndexDrawer}
+            />
+          </ComponentErrorBoundary>
           <button
             className={styles.iconBtn}
             onClick={onNewChat}

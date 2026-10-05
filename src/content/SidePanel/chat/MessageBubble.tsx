@@ -3,6 +3,7 @@ import type { ChatMessage, AIErrorCode } from '../../../shared/aiTypes';
 import Markdown from './Markdown';
 import ThinkingBlock from './ThinkingBlock';
 import ActivityLines from './ActivityLines';
+import { ComponentErrorBoundary } from './ComponentErrorBoundary';
 import { sanitizeAssistantAttribution } from '../../../shared/aiSanitizer';
 import styles from './chat.module.css';
 
@@ -170,7 +171,9 @@ const MessageBubble = React.memo(function MessageBubble({
     <div className={styles.assistantRow}>
       <div className={styles.assistantBubble}>
         {message.activity && message.activity.length > 0 && (
-          <ActivityLines items={message.activity} isStreaming={isStreaming && isLastAssistant} />
+          <ComponentErrorBoundary>
+            <ActivityLines items={message.activity} isStreaming={isStreaming && isLastAssistant} />
+          </ComponentErrorBoundary>
         )}
 
         {message.reasoning && (

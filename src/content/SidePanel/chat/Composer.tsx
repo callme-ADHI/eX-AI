@@ -3,6 +3,7 @@ import type { OCRMode } from '../../../shared/aiTypes';
 import type { Scope } from '../../pageText/types';
 import PageChip from './PageChip';
 import ConsentBar from './ConsentBar';
+import { ComponentErrorBoundary } from './ComponentErrorBoundary';
 import styles from './chat.module.css';
 
 export interface AttachmentChipData {
@@ -115,20 +116,21 @@ export default function Composer({
   return (
     <div className={styles.composer}>
       {/* Consent prompt replaces chip row while open */}
-      {consentPrompt ? (
-        <ConsentBar {...consentPrompt} />
-      ) : (
-        /* Chip Row: Page chip + OCR chip */
-        <div className={styles.attachmentArea}>
-          <PageChip
-            scope={pageScope}
-            onScopeChange={onPageScopeChange}
-            ownHost={ownHost}
-            maxChars={maxChars}
-            keepQuery={keepQuery}
-          />
+      <ComponentErrorBoundary>
+        {consentPrompt ? (
+          <ConsentBar {...consentPrompt} />
+        ) : (
+          /* Chip Row: Page chip + OCR chip */
+          <div className={styles.attachmentArea}>
+            <PageChip
+              scope={pageScope}
+              onScopeChange={onPageScopeChange}
+              ownHost={ownHost}
+              maxChars={maxChars}
+              keepQuery={keepQuery}
+            />
 
-          {attachment && (
+            {attachment && (
             <div className={styles.attachmentChip}>
               {isOcrLoading ? (
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#7094ff' }}>
@@ -187,6 +189,7 @@ export default function Composer({
           )}
         </div>
       )}
+      </ComponentErrorBoundary>
 
       {/* JavaScript-rendered page warning notice */}
       {jsOnlyNotice && (
