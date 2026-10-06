@@ -101,7 +101,7 @@ export default function AutofillSettings({ settings, onSave, onClose }: Props) {
           </label>
 
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '10px' }}>
-            <h4 style={{ margin: '0 0 8px 0', fontSize: '12px', fontWeight: 600 }}>Authorized Test Hosts</h4>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: '12px', fontWeight: 600 }}>Websites & Hosts</h4>
             <div style={{ display: 'flex', gap: '6px', marginBottom: '6px' }}>
               <input
                 type="text"
@@ -122,7 +122,7 @@ export default function AutofillSettings({ settings, onSave, onClose }: Props) {
             <div style={{ maxHeight: '120px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               {allowList.length === 0 ? (
                 <div style={{ fontSize: '11px', color: 'rgba(232,232,240,0.4)' }}>
-                  No custom hosts. Local/test hosts (localhost, .test, .local) are allowed by default.
+                  All websites are authorized for autofill by default.
                 </div>
               ) : (
                 allowList.map(h => (

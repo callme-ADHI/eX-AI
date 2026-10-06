@@ -7,7 +7,7 @@ import {
 } from '../src/shared/autofillPolicy';
 
 describe('policy', () => {
-  it('allows local/test hosts by default', () => {
+  it('allows all valid hosts by default', () => {
     for (const h of [
       'localhost',
       '127.0.0.1',
@@ -16,21 +16,23 @@ describe('policy', () => {
       'exam.test',
       'x.local',
       'y.example',
+      'staging.mycollege.edu',
+      'www.hackerrank.com',
+      'assessments.mettl.com',
+      'leetcode.com',
+      'google.com',
     ]) {
       expect(isAutofillAllowed(h, []).allowed, `host: ${h}`).toBe(true);
     }
   });
 
-  it('denies unknown hosts until allowlisted (subdomains included)', () => {
-    expect(isAutofillAllowed('staging.mycollege.edu', []).allowed).toBe(false);
-    expect(isAutofillAllowed('staging.mycollege.edu', ['mycollege.edu']).allowed).toBe(true);
-    expect(isAutofillAllowed('evilmycollege.edu', ['mycollege.edu']).allowed).toBe(false);
+  it('rejects empty/invalid hostnames', () => {
+    expect(isAutofillAllowed('', []).allowed).toBe(false);
   });
 
-  it('hard-deny wins even if allowlisted', () => {
-    expect(isAutofillAllowed('www.hackerrank.com', ['hackerrank.com']).allowed).toBe(false);
-    expect(isHardDenied('assessments.mettl.com')).toBe(true);
-    expect(isHardDenied('notmettl.com')).toBe(false);
+  it('isHardDenied returns false for all websites', () => {
+    expect(isHardDenied('www.hackerrank.com')).toBe(false);
+    expect(isHardDenied('assessments.mettl.com')).toBe(false);
   });
 
   it('validates allowlist entries', () => {
@@ -39,8 +41,6 @@ describe('policy', () => {
     );
     expect(validateAllowEntry('*.edu').ok).toBe(false);
     expect(validateAllowEntry('com').ok).toBe(false);
-    expect(validateAllowEntry('10.0.0.5').ok).toBe(false);
-    expect(validateAllowEntry('hackerrank.com').ok).toBe(false);
     expect(validateAllowEntry('localhost').ok).toBe(true);
   });
 

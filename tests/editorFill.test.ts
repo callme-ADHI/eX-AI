@@ -173,11 +173,11 @@ describe('registerEditorFill', () => {
     await new Promise((r) => setTimeout(r, 10));
     expect(send3).toHaveBeenCalledWith(expect.objectContaining({ ok: false, error: 'bad code' }));
 
-    // Disallowed origin (hard denied)
+    // Invalid sender URL
     const send4 = vi.fn();
     messageListener(
       { type: 'AUTOFILL_EDITOR_FILL', token: 'a'.repeat(32), code: 'valid code' },
-      { tab: { id: 1 }, url: 'https://hackerrank.com/test' },
+      { tab: { id: 1 }, url: 'invalid-url' },
       send4,
     );
     await new Promise((r) => setTimeout(r, 10));
